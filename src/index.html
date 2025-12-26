@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nebula</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@400&display=swap"
+        rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #666;
+        }
+
+        ::-webkit-scrollbar-corner {
+            background: transparent;
+        }
+
+        :root {
+            --bg: #0a0a0a;
+            --surface: #141414;
+            --border: #2a2a2a;
+            --text: #ffffff;
+            --text-muted: #888888;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* Title Bar */
+        .titlebar {
+            height: 40px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            -webkit-app-region: drag;
+        }
+
+        .titlebar-buttons {
+            position: absolute;
+            left: 16px;
+            display: flex;
+            gap: 8px;
+            -webkit-app-region: no-drag;
+        }
+
+        .titlebar-btn {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-close {
+            background: #FF5F57;
+        }
+
+        .btn-min {
+            background: #FEBC2E;
+        }
+
+        .btn-max {
+            background: #28C840;
+        }
+
+        .titlebar-title {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+        }
+
+        /* Header */
+        .header {
+            padding: 16px 32px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo svg {
+            width: 32px;
+            height: 32px;
+        }
+
+        .logo h1 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        /* Navigation */
+        .nav {
+            display: flex;
+            gap: 4px;
+            background: var(--surface);
+            padding: 4px;
+            border-radius: 24px;
+            border: 1px solid var(--border);
+        }
+
+        .nav-btn {
+            padding: 8px 20px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover {
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-btn.active {
+            background: var(--text);
+            color: var(--bg);
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            font-size: 11px;
+            font-family: monospace;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        /* Main Content */
+        .main {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Pages */
+        .page {
+            display: none;
+            width: 100%;
+            padding: 32px;
+            overflow-y: auto;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* Page with Sidebar */
+        .page-with-sidebar {
+            display: none;
+            width: 100%;
+        }
+
+        .page-with-sidebar.active {
+            display: flex;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            padding: 24px;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .sidebar-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        /* Mode Cards */
+        .mode-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .mode-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .mode-card.selected {
+            border-color: var(--text);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .mode-card .material-symbols-outlined {
+            color: var(--text-muted);
+            font-size: 18px;
+        }
+
+        .mode-card span:last-child {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Content Area */
+        .content {
+            flex: 1;
+            padding: 32px;
+            overflow-y: auto;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        /* Color Palette */
+        .palette {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .color-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+
+        .color-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .color-btn.selected {
+            border-color: white;
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--text);
+            color: var(--bg);
+        }
+
+        .btn-primary:hover {
+            background: #e5e5e5;
+        }
+
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        /* Keyboard */
+        .keyboard {
+            background: #0d0d0d;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            display: inline-block;
+        }
+
+        .key-row {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 4px;
+        }
+
+        .key {
+            height: 44px;
+            min-width: 44px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .key:hover {
+            background: var(--border);
+        }
+
+        .key.painted {
+            border-color: currentColor;
+            box-shadow: 0 0 8px currentColor;
+            color: white;
+        }
+
+        /* Slider */
+        .slider-group {
+            margin-bottom: 24px;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .slider-value {
+            font-family: monospace;
+            background: var(--bg);
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        /* Footer */
+        .footer {
+            height: 36px;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* Stats */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Title Bar -->
+    <div class="titlebar">
+        <div class="titlebar-buttons">
+            <button class="titlebar-btn btn-close" id="btnClose"></button>
+            <button class="titlebar-btn btn-min" id="btnMin"></button>
+            <button class="titlebar-btn btn-max"></button>
+        </div>
+        <span class="titlebar-title">Nebula Controller</span>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <svg fill="currentColor" viewBox="0 0 48 48">
+                <path
+                    d="M42.4379 44C42.4379 44 36.0744 33.9038 41.1692 24C46.8624 12.9336 42.2078 4 42.2078 4L7.01134 4C7.01134 4 11.6577 12.932 5.96912 23.9969C0.876273 33.9029 7.27094 44 7.27094 44L42.4379 44Z" />
+            </svg>
+            <h1>Nebula</h1>
+        </div>
+
+        <nav class="nav">
+            <button class="nav-btn" data-page="lighting">Lighting</button>
+            <button class="nav-btn" data-page="smart">Smart</button>
+            <button class="nav-btn" data-page="perkey">PerKey</button>
+            <button class="nav-btn" data-page="stats">Stats</button>
+            <button class="nav-btn active" data-page="custom">Custom</button>
+        </nav>
+
+        <div class="status-badge">
+            <div class="status-dot"></div>
+            <span id="statusText">Connected</span>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+
+        <!-- LIGHTING PAGE -->
+        <div id="page-lighting" class="page-with-sidebar">
+            <aside class="sidebar">
+                <div class="sidebar-title">Lighting Modes</div>
+                <div id="modeList"></div>
+            </aside>
+            <div class="content">
+                <div class="card">
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span>Speed</span>
+                            <span class="slider-value" id="speedVal">100%</span>
+                        </div>
+                        <input type="range" id="speedSlider" min="0" max="100" value="100" />
+                    </div>
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span>Brightness</span>
+                            <span class="slider-value" id="brightVal">100%</span>
+                        </div>
+                        <input type="range" id="brightSlider" min="0" max="100" value="100" />
+                    </div>
+                    <div style="margin-bottom: 24px;">
+                        <div class="slider-label"><span>Preset Colors</span></div>
+                        <div class="palette" id="lightingColors"></div>
+                    </div>
+                    <div style="margin-bottom: 24px;" id="directionGroup">
+                        <div class="slider-label"><span>Direction (Wave modes only)</span></div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-secondary" id="dirRight" style="flex:1;">
+                                <span class="material-symbols-outlined">arrow_forward</span> Right
+                            </button>
+                            <button class="btn btn-secondary" id="dirLeft" style="flex:1;">
+                                <span class="material-symbols-outlined">arrow_back</span> Left
+                            </button>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" id="applyLighting">
+                        <span class="material-symbols-outlined">save</span>
+                        Apply
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SMART PAGE -->
+        <div id="page-smart" class="page">
+            <div style="max-width: 800px; margin: 0 auto;">
+                <h2 style="font-size: 28px; font-weight: 700; margin-bottom: 8px;">Adaptive Lighting</h2>
+                <p style="color: var(--text-muted); margin-bottom: 24px;">Automatically adjust lighting based on your
+                    typing activity</p>
+
+                <div class="card" style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-weight: 600; margin-bottom: 4px;">Smart Mode</div>
+                        <div style="font-size: 13px; color: var(--text-muted);">Enable intelligent lighting adjustments
+                        </div>
+                    </div>
+                    <label style="position: relative; width: 52px; height: 28px;">
+                        <input type="checkbox" id="smartToggle" style="opacity: 0; width: 0; height: 0;">
+                        <span id="smartSwitch"
+                            style="position: absolute; inset: 0; background: var(--border); border-radius: 14px; cursor: pointer; transition: 0.3s;"></span>
+                    </label>
+                </div>
+
+                <!-- Neighbor Flash Toggle -->
+                <div class="card" style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-weight: 600; margin-bottom: 4px;">Neighbor Flash</div>
+                        <div style="font-size: 13px; color: var(--text-muted);">Flash surrounding keys when waking from
+                            idle (uses EEPROM)
+                        </div>
+                    </div>
+                    <label style="position: relative; width: 52px; height: 28px;">
+                        <input type="checkbox" id="neighborFlashToggle" checked
+                            style="opacity: 0; width: 0; height: 0;">
+                        <span id="neighborFlashSwitch"
+                            style="position: absolute; inset: 0; background: white; border-radius: 14px; cursor: pointer; transition: 0.3s;"></span>
+                    </label>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div class="card">
+                        <div class="card-title">Active Color</div>
+                        <div class="palette" id="activeColors"></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Idle Color</div>
+                        <div class="palette" id="idleColors"></div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="slider-group" style="margin-bottom: 0;">
+                        <div class="slider-label">
+                            <span>Inactivity Timeout</span>
+                            <span class="slider-value" id="timeoutVal">15s</span>
+                        </div>
+                        <input type="range" id="timeoutSlider" min="5" max="60" value="15" />
+                    </div>
+                </div>
+
+                <div style="text-align: right; margin-top: 16px;">
+                    <button class="btn btn-primary" id="applySmart">
+                        <span class="material-symbols-outlined">save</span>
+                        Apply Settings
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- STATS PAGE -->
+        <div id="page-stats" class="page">
+            <div style="max-width: 1000px; margin: 0 auto;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                    <div>
+                        <h2 style="font-size: 28px; font-weight: 700; margin-bottom: 4px;">Typing Analytics</h2>
+                        <p style="color: var(--text-muted); font-size: 13px;">Session started at <span
+                                id="sessionStart">--:--</span></p>
+                    </div>
+                    <button class="btn btn-secondary" id="resetStats">
+                        <span class="material-symbols-outlined">restart_alt</span>
+                        Reset
+                    </button>
+                </div>
+
+                <div class="stat-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Lifetime Keys</div>
+                        <div class="stat-value" id="totalKeys">0</div>
+                    </div>
+                    <div class="stat-card" style="border-color: var(--text);">
+                        <div class="stat-label">Live KPM</div>
+                        <div class="stat-value" id="kpmValue">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Session Duration</div>
+                        <div class="stat-value" id="sessionDuration">00:00</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Session Keys</div>
+                        <div class="stat-value" id="sessionKeys">0</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Top Pressed Keys</div>
+                    <div id="topKeys" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PER-KEY RGB PAGE -->
+        <div id="page-perkey" class="page-with-sidebar">
+            <aside class="sidebar">
+                <div class="sidebar-title">Color Picker</div>
+
+                <!-- RGB Color Picker -->
+                <div style="margin-bottom: 16px;">
+                    <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px;">
+                        <input type="color" id="perkeyColorPicker" value="#ff0000"
+                            style="width: 48px; height: 48px; border: none; border-radius: 8px; cursor: pointer;">
+                        <div style="flex: 1;">
+                            <div style="font-size: 11px; color: var(--text-muted);">HEX</div>
+                            <input type="text" id="perkeyHexInput" value="#FF0000"
+                                style="width: 100%; padding: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-family: monospace;">
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                        <div>
+                            <label style="font-size: 11px; color: var(--text-muted);">R</label>
+                            <input type="number" id="perkeyR" value="255" min="0" max="255"
+                                style="width: 100%; padding: 6px; background: var(--surface); border: 1px solid #f44; border-radius: 6px; color: var(--text);">
+                        </div>
+                        <div>
+                            <label style="font-size: 11px; color: var(--text-muted);">G</label>
+                            <input type="number" id="perkeyG" value="0" min="0" max="255"
+                                style="width: 100%; padding: 6px; background: var(--surface); border: 1px solid #4f4; border-radius: 6px; color: var(--text);">
+                        </div>
+                        <div>
+                            <label style="font-size: 11px; color: var(--text-muted);">B</label>
+                            <input type="number" id="perkeyB" value="0" min="0" max="255"
+                                style="width: 100%; padding: 6px; background: var(--surface); border: 1px solid #44f; border-radius: 6px; color: var(--text);">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-title" style="margin-top: 16px;">Quick Colors</div>
+                <div id="perkeyQuickColors"
+                    style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin-bottom: 16px;"></div>
+
+                <div class="sidebar-title" style="margin-top: 16px;">Presets</div>
+                <select id="perkeyPresetSelect"
+                    style="width: 100%; padding: 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: inherit; margin-bottom: 12px; cursor: pointer;">
+                    <option value="">Select a preset...</option>
+                    <option value="rainbow">🌈 Rainbow</option>
+                    <option value="gradient">🎨 Red→Blue Gradient</option>
+                    <option value="gaming">🎮 Gaming (WASD)</option>
+                    <option value="fill">🪣 Fill All (current color)</option>
+                    <option value="clear">⬛ Clear All</option>
+                </select>
+
+                <div class="sidebar-title" style="margin-top: 16px;">Effects</div>
+                <button class="btn btn-secondary" id="perkeyReactive" style="width: 100%; margin-bottom: 8px;">
+                    <span class="material-symbols-outlined">bolt</span>
+                    Reactive Mode (OFF)
+                </button>
+
+                <button class="btn btn-primary" id="perkeyApply" style="width: 100%;">
+                    <span class="material-symbols-outlined">save</span>
+                    Apply to Keyboard
+                </button>
+            </aside>
+            <div class="content" style="display: flex; flex-direction: column;">
+                <div style="margin-bottom: 24px;">
+                    <h2 style="font-size: 28px; font-weight: 700; margin-bottom: 4px;">Per-Key RGB Control</h2>
+                    <p style="color: var(--text-muted);">True per-key RGB with any color • Click keys to paint</p>
+                </div>
+                <div style="flex: 1; display: flex; align-items: center; justify-content: center;">
+                    <div class="keyboard" id="perkeyKeyboard"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CUSTOM PAGE -->
+        <div id="page-custom" class="page-with-sidebar active">
+            <aside class="sidebar">
+                <div class="sidebar-title">Painting Tools</div>
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">Select a color and click keys
+                    to paint</p>
+
+                <div class="sidebar-title" style="margin-top: 24px;">Palette</div>
+                <div class="palette" id="customPalette" style="margin-bottom: 24px;"></div>
+
+                <button class="btn btn-secondary" id="fillAll" style="width: 100%; margin-bottom: 8px;">
+                    <span class="material-symbols-outlined">format_color_fill</span>
+                    Fill All
+                </button>
+                <button class="btn btn-primary" id="applyCustom" style="width: 100%;">
+                    <span class="material-symbols-outlined">save</span>
+                    Apply to Keyboard
+                </button>
+            </aside>
+            <div class="content" style="display: flex; flex-direction: column;">
+                <div style="margin-bottom: 24px;">
+                    <h2 style="font-size: 28px; font-weight: 700; margin-bottom: 4px;">Per-Key RGB</h2>
+                    <p style="color: var(--text-muted);">Customize lighting for each key individually</p>
+                </div>
+                <div style="flex: 1; display: flex; align-items: center; justify-content: center;">
+                    <div class="keyboard" id="keyboard"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <span>Connected via USB</span>
+        <span id="footerStatus">Ready</span>
+    </footer>
+
+    <script>
+        // ========== CONFIGURATION ==========
+        const COLORS = [
+            { name: 'Red', hex: '#FF0000' },
+            { name: 'Green', hex: '#00FF00' },
+            { name: 'Yellow', hex: '#FFFF00' },
+            { name: 'Blue', hex: '#0000FF' },
+            { name: 'Cyan', hex: '#00FFFF' },
+            { name: 'Magenta', hex: '#FF00FF' },
+            { name: 'White', hex: '#FFFFFF' },
+            { name: 'Off', hex: '#000000' }
+        ];
+
+        const MODES = [
+            { id: 1, name: 'Breathing', icon: 'blur_on' },
+            { id: 2, name: 'Fade', icon: 'gradient' },
+            { id: 3, name: 'Reactive', icon: 'touch_app' },
+            { id: 4, name: 'Starlight', icon: 'star_rate' },
+            { id: 5, name: 'Laser', icon: 'bolt' },
+            { id: 6, name: 'Wave 1', icon: 'waves' },
+            { id: 7, name: 'Neon', icon: 'fluorescent' },
+            { id: 8, name: 'Raindrop', icon: 'water_drop' },
+            { id: 9, name: 'Ripple', icon: 'ripples' },
+            { id: 10, name: 'Wave 2', icon: 'tsunami' },
+            { id: 11, name: 'Swirl', icon: 'cyclone' },
+        ];
+
+        const KEYBOARD_LAYOUT = [
+            ['Esc', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12', 'Prt', 'Scr', 'Pau'],
+            ['`', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', 'Bksp', 'Ins', 'Hm', 'PgU'],
+            ['Tab', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '[', ']', '\\', 'Del', 'End', 'PgD'],
+            ['Caps', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', "'", 'Enter'],
+            ['Shift', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/', 'Shift', 'Up'],
+            ['Ctrl', 'Win', 'Alt', 'Space', 'Alt', 'Fn', 'Menu', 'Ctrl', 'Left', 'Down', 'Right']
+        ];
+
+        // ========== STATE ==========
+        let selectedMode = 9;
+        let selectedColor = 6;
+        let selectedPaintColor = 0;
+        let activeSmartColor = 6;
+        let idleSmartColor = 7;
+        let keyColorMap = [];
+        let keyElements = [];
+
+        // ========== HELPERS ==========
+        function setStatus(msg) {
+            document.getElementById('footerStatus').textContent = msg;
+            document.getElementById('statusText').textContent = msg;
+        }
+
+        function createColorButtons(containerId, selectedIdx, onClick) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = COLORS.map((c, i) => `
+                <button class="color-btn ${selectedIdx === i ? 'selected' : ''}" 
+                    style="background: ${c.hex}; ${c.hex === '#000000' ? 'border: 1px dashed #555;' : ''}"
+                    onclick="${onClick}(${i})"></button>
+            `).join('');
+        }
+
+        // ========== NAVIGATION ==========
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const page = btn.dataset.page;
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                document.querySelectorAll('.page, .page-with-sidebar').forEach(p => p.classList.remove('active'));
+                document.getElementById('page-' + page).classList.add('active');
+            });
+        });
+
+        // ========== WINDOW CONTROLS ==========
+        document.getElementById('btnClose').onclick = () => { if (window.api) window.api.windowControl('close'); };
+        document.getElementById('btnMin').onclick = () => { if (window.api) window.api.windowControl('minimize'); };
+
+        // ========== LIGHTING PAGE ==========
+        function initLighting() {
+            // Modes
+            document.getElementById('modeList').innerHTML = MODES.map(m => `
+                <div class="mode-card ${selectedMode === m.id ? 'selected' : ''}" onclick="selectMode(${m.id})">
+                    <span class="material-symbols-outlined">${m.icon}</span>
+                    <span>${m.name}</span>
+                </div>
+            `).join('');
+
+            // Colors
+            createColorButtons('lightingColors', selectedColor, 'selectLightingColor');
+
+            // Sliders
+            document.getElementById('speedSlider').oninput = e => {
+                document.getElementById('speedVal').textContent = e.target.value + '%';
+            };
+            document.getElementById('brightSlider').oninput = e => {
+                document.getElementById('brightVal').textContent = e.target.value + '%';
+            };
+        }
+
+        function selectMode(id) {
+            selectedMode = id;
+            initLighting();
+        }
+
+        function selectLightingColor(idx) {
+            selectedColor = idx;
+            initLighting();
+        }
+
+        let selectedDirection = 0; // 0=Right, 1=Left
+
+        document.getElementById('dirRight').onclick = () => {
+            selectedDirection = 0;
+            document.getElementById('dirRight').classList.add('btn-primary');
+            document.getElementById('dirRight').classList.remove('btn-secondary');
+            document.getElementById('dirLeft').classList.add('btn-secondary');
+            document.getElementById('dirLeft').classList.remove('btn-primary');
+        };
+        document.getElementById('dirLeft').onclick = () => {
+            selectedDirection = 1;
+            document.getElementById('dirLeft').classList.add('btn-primary');
+            document.getElementById('dirLeft').classList.remove('btn-secondary');
+            document.getElementById('dirRight').classList.add('btn-secondary');
+            document.getElementById('dirRight').classList.remove('btn-primary');
+        };
+
+        document.getElementById('applyLighting').onclick = () => {
+            if (window.api) {
+                const speed = parseInt(document.getElementById('speedSlider').value);
+                const brightness = parseInt(document.getElementById('brightSlider').value);
+                window.api.setMode(selectedMode, selectedColor, speed, brightness, selectedDirection);
+                setStatus('Mode applied');
+            }
+        };
+
+        // ========== SMART PAGE ==========
+        function initSmart() {
+            createColorButtons('activeColors', activeSmartColor, 'selectActiveColor');
+            createColorButtons('idleColors', idleSmartColor, 'selectIdleColor');
+
+            document.getElementById('timeoutSlider').oninput = e => {
+                document.getElementById('timeoutVal').textContent = e.target.value + 's';
+            };
+
+            // Toggle styling
+            const toggle = document.getElementById('smartToggle');
+            const sw = document.getElementById('smartSwitch');
+            toggle.onchange = () => {
+                sw.style.background = toggle.checked ? 'white' : 'var(--border)';
+            };
+        }
+
+        function selectActiveColor(idx) { activeSmartColor = idx; initSmart(); }
+        function selectIdleColor(idx) { idleSmartColor = idx; initSmart(); }
+
+        document.getElementById('applySmart').onclick = () => {
+            if (window.api) {
+                const enabled = document.getElementById('smartToggle').checked;
+                const timeout = parseInt(document.getElementById('timeoutSlider').value) * 1000;
+                window.api.updateSettings({ idleTimeout: timeout, activeColor: activeSmartColor, idleColor: idleSmartColor });
+                window.api.toggleSmart(enabled);
+                setStatus(enabled ? 'Smart mode ON' : 'Smart mode OFF');
+            }
+        };
+
+        // ========== STATS PAGE ==========
+        function initStats() {
+            document.getElementById('sessionStart').textContent = new Date().toLocaleTimeString();
+        }
+
+        document.getElementById('resetStats').onclick = () => {
+            if (window.api) {
+                window.api.resetStats();
+                setStatus('Stats reset');
+            }
+        };
+
+        // ========== CUSTOM PAGE ==========
+        function initCustom() {
+            createColorButtons('customPalette', selectedPaintColor, 'selectPaintColor');
+            buildKeyboard();
+        }
+
+        function selectPaintColor(idx) {
+            selectedPaintColor = idx;
+            createColorButtons('customPalette', selectedPaintColor, 'selectPaintColor');
+        }
+
+        function buildKeyboard() {
+            const container = document.getElementById('keyboard');
+            container.innerHTML = '';
+            keyElements = [];
+            keyColorMap = [];
+            let idx = 0;
+
+            KEYBOARD_LAYOUT.forEach(row => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'key-row';
+
+                row.forEach(key => {
+                    const btn = document.createElement('button');
+                    btn.className = 'key';
+                    btn.textContent = key;
+
+                    // Set widths
+                    if (key === 'Space') btn.style.width = '240px';
+                    else if (key === 'Bksp' || key === 'Tab' || key === '\\') btn.style.width = '72px';
+                    else if (key === 'Caps' || key === 'Enter') btn.style.width = '84px';
+                    else if (key === 'Shift') btn.style.width = '108px';
+                    else if (['Ctrl', 'Win', 'Alt', 'Fn', 'Menu'].includes(key)) btn.style.width = '52px';
+
+                    const keyIdx = idx;
+                    btn.onclick = () => paintKey(keyIdx);
+
+                    rowDiv.appendChild(btn);
+                    keyElements.push(btn);
+                    keyColorMap.push(7); // Default off
+                    idx++;
+                });
+
+                container.appendChild(rowDiv);
+            });
+        }
+
+        function paintKey(idx) {
+            keyColorMap[idx] = selectedPaintColor;
+            const color = COLORS[selectedPaintColor];
+            const btn = keyElements[idx];
+
+            if (selectedPaintColor === 7) {
+                btn.classList.remove('painted');
+                btn.style.color = '';
+                btn.style.borderColor = '';
+                btn.style.boxShadow = '';
+            } else {
+                btn.classList.add('painted');
+                btn.style.color = color.hex;
+                btn.style.borderColor = color.hex;
+                btn.style.boxShadow = `0 0 8px ${color.hex}`;
+            }
+        }
+
+        document.getElementById('fillAll').onclick = () => {
+            keyElements.forEach((_, i) => paintKey(i));
+            setStatus('Filled with ' + COLORS[selectedPaintColor].name);
+        };
+
+        document.getElementById('applyCustom').onclick = () => {
+            if (window.api) {
+                setStatus('Applying...');
+                const map = [...keyColorMap];
+                while (map.length < 128) map.push(7);
+                window.api.updateSettings({ custom: true, map: map });
+            }
+        };
+
+        // ========== API LISTENERS ==========
+        if (window.api) {
+            window.api.onStatus(msg => setStatus(msg));
+            window.api.onFullStats(data => {
+                if (data.total !== undefined) document.getElementById('totalKeys').textContent = data.total.toLocaleString();
+                if (data.kpm !== undefined) document.getElementById('kpmValue').textContent = data.kpm;
+                if (data.sessionKeys !== undefined) document.getElementById('sessionKeys').textContent = data.sessionKeys.toLocaleString();
+                if (data.session !== undefined) {
+                    const m = Math.floor(data.session / 60);
+                    const s = data.session % 60;
+                    document.getElementById('sessionDuration').textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+                }
+                if (data.top) {
+                    document.getElementById('topKeys').innerHTML = data.top.slice(0, 10).map(k => `
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 40px; height: 40px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 12px;">${k.key}</div>
+                            <div style="flex: 1;">
+                                <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
+                                    <span>${k.count.toLocaleString()}</span>
+                                </div>
+                                <div style="height: 4px; background: var(--border); border-radius: 2px; overflow: hidden;">
+                                    <div style="height: 100%; background: white; width: ${Math.min(100, (k.count / data.top[0].count) * 100)}%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            });
+
+            setInterval(() => window.api.getStats(), 5000);
+        }
+
+        // ========== INIT ==========
+        initLighting();
+        initSmart();
+        initStats();
+        initPerKey();
+        initCustom();
+
+        // ========== PER-KEY RGB ==========
+        function initPerKey() {
+            const PERKEY_LAYOUT = [
+                { keys: ['ESC', '', 'F1', 'F2', 'F3', 'F4', '', 'F5', 'F6', 'F7', 'F8', '', 'F9', 'F10', 'F11', 'F12', '', 'PRTSC', 'SCRLK', 'PAUSE'], sizes: [1, 0.5, 1, 1, 1, 1, 0.5, 1, 1, 1, 1, 0.5, 1, 1, 1, 1, 0.25, 1, 1, 1] },
+                { keys: ['GRAVE', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 'MINUS', 'EQUAL', 'BACKSPACE', '', 'INSERT', 'HOME', 'PGUP'], sizes: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 0.25, 1, 1, 1] },
+                { keys: ['TAB', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 'LBRACKET', 'RBRACKET', 'BACKSLASH', '', 'DELETE', 'END', 'PGDN'], sizes: [1.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.5, 0.25, 1, 1, 1] },
+                { keys: ['CAPSLOCK', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'SEMICOLON', 'QUOTE', 'ENTER'], sizes: [1.75, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2.25] },
+                { keys: ['LSHIFT', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', 'COMMA', 'PERIOD', 'SLASH', 'RSHIFT', '', '', 'UP'], sizes: [2.25, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2.75, 0.25, 1, 1] },
+                { keys: ['LCTRL', 'LWIN', 'LALT', 'SPACE', 'RALT', 'FN', 'MENU', 'RCTRL', '', 'LEFT', 'DOWN', 'RIGHT'], sizes: [1.25, 1.25, 1.25, 6.25, 1, 1, 1, 1.25, 0.75, 1, 1, 1] }
+            ];
+
+            const KEY_DISPLAY = {
+                'ESC': 'Esc', 'GRAVE': '`', 'MINUS': '-', 'EQUAL': '=', 'BACKSPACE': '⌫',
+                'LBRACKET': '[', 'RBRACKET': ']', 'BACKSLASH': '\\', 'SEMICOLON': ';', 'QUOTE': "'",
+                'COMMA': ',', 'PERIOD': '.', 'SLASH': '/', 'CAPSLOCK': 'Caps', 'LSHIFT': 'Shift',
+                'RSHIFT': 'Shift', 'LCTRL': 'Ctrl', 'RCTRL': 'Ctrl', 'LALT': 'Alt', 'RALT': 'Alt',
+                'LWIN': 'Win', 'MENU': '☰', 'ENTER': '↵', 'TAB': '⇥', 'SPACE': '',
+                'UP': '↑', 'DOWN': '↓', 'LEFT': '←', 'RIGHT': '→',
+                'INSERT': 'Ins', 'DELETE': 'Del', 'HOME': 'Hm', 'END': 'End',
+                'PGUP': 'PgU', 'PGDN': 'PgD', 'PRTSC': 'Prt', 'SCRLK': 'Scr', 'PAUSE': 'Pau'
+            };
+
+            let perkeyColors = {};  // keyName -> {r, g, b}
+            let currentColor = { r: 255, g: 0, b: 0 };
+
+            // Build keyboard
+            const container = document.getElementById('perkeyKeyboard');
+            if (!container) {
+                console.error('perkeyKeyboard container not found');
+                return;
+            }
+            container.innerHTML = '';
+
+            PERKEY_LAYOUT.forEach(row => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'keyboard-row';
+                rowDiv.style.display = 'flex';
+                rowDiv.style.gap = '4px';
+                rowDiv.style.marginBottom = '4px';
+
+                row.keys.forEach((key, idx) => {
+                    if (!key) {
+                        const spacer = document.createElement('div');
+                        spacer.style.width = (row.sizes[idx] * 40) + 'px';
+                        rowDiv.appendChild(spacer);
+                        return;
+                    }
+
+                    const keyDiv = document.createElement('div');
+                    keyDiv.className = 'key perkey-key';
+                    keyDiv.dataset.key = key;
+                    keyDiv.style.width = (row.sizes[idx] * 40 - 4) + 'px';
+                    keyDiv.style.height = '36px';
+                    keyDiv.style.display = 'flex';
+                    keyDiv.style.alignItems = 'center';
+                    keyDiv.style.justifyContent = 'center';
+                    keyDiv.style.background = '#222';
+                    keyDiv.style.border = '1px solid #444';
+                    keyDiv.style.borderRadius = '4px';
+                    keyDiv.style.fontSize = key.length > 2 ? '9px' : '11px';
+                    keyDiv.style.cursor = 'pointer';
+                    keyDiv.style.transition = 'all 0.15s';
+                    keyDiv.textContent = KEY_DISPLAY[key] || key;
+
+                    keyDiv.onclick = () => {
+                        perkeyColors[key] = { ...currentColor };
+                        keyDiv.style.background = `rgb(${currentColor.r}, ${currentColor.g}, ${currentColor.b})`;
+                        keyDiv.style.color = (currentColor.r + currentColor.g + currentColor.b) > 380 ? '#000' : '#fff';
+                    };
+
+                    rowDiv.appendChild(keyDiv);
+                });
+
+                container.appendChild(rowDiv);
+            });
+
+            // Quick colors
+            const quickColors = [
+                '#FF0000', '#00FF00', '#0000FF', '#FFFF00',
+                '#00FFFF', '#FF00FF', '#FFFFFF', '#FF8000',
+                '#FF0080', '#00FF80', '#8000FF', '#000000'
+            ];
+            const quickContainer = document.getElementById('perkeyQuickColors');
+            quickColors.forEach(hex => {
+                const btn = document.createElement('div');
+                btn.style.width = '28px';
+                btn.style.height = '28px';
+                btn.style.background = hex;
+                btn.style.borderRadius = '6px';
+                btn.style.cursor = 'pointer';
+                btn.style.border = '2px solid transparent';
+                btn.onclick = () => {
+                    const r = parseInt(hex.slice(1, 3), 16);
+                    const g = parseInt(hex.slice(3, 5), 16);
+                    const b = parseInt(hex.slice(5, 7), 16);
+                    updatePerkeyColor(r, g, b);
+                };
+                quickContainer.appendChild(btn);
+            });
+
+            // Color picker sync
+            function updatePerkeyColor(r, g, b) {
+                currentColor = { r, g, b };
+                const hex = '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
+                document.getElementById('perkeyColorPicker').value = hex;
+                document.getElementById('perkeyHexInput').value = hex.toUpperCase();
+                document.getElementById('perkeyR').value = r;
+                document.getElementById('perkeyG').value = g;
+                document.getElementById('perkeyB').value = b;
+            }
+
+            document.getElementById('perkeyColorPicker').oninput = e => {
+                const hex = e.target.value;
+                const r = parseInt(hex.slice(1, 3), 16);
+                const g = parseInt(hex.slice(3, 5), 16);
+                const b = parseInt(hex.slice(5, 7), 16);
+                updatePerkeyColor(r, g, b);
+            };
+
+            ['perkeyR', 'perkeyG', 'perkeyB'].forEach(id => {
+                document.getElementById(id).oninput = () => {
+                    const r = parseInt(document.getElementById('perkeyR').value) || 0;
+                    const g = parseInt(document.getElementById('perkeyG').value) || 0;
+                    const b = parseInt(document.getElementById('perkeyB').value) || 0;
+                    updatePerkeyColor(r, g, b);
+                };
+            });
+
+            // Actions
+            // Preset dropdown handler
+            document.getElementById('perkeyPresetSelect').onchange = (e) => {
+                const preset = e.target.value;
+                if (!preset) return;
+
+                const keys = document.querySelectorAll('.perkey-key');
+
+                switch (preset) {
+                    case 'rainbow':
+                        perkeyColors = {};
+                        keys.forEach((el, i) => {
+                            const hue = (i / keys.length) * 360;
+                            el.style.background = `hsl(${hue}, 100%, 50%)`;
+                            el.style.color = '#000';
+                        });
+                        if (window.api) window.api.send({ action: 'perkey-rainbow' });
+                        setStatus('Rainbow applied!');
+                        break;
+
+                    case 'gradient':
+                        perkeyColors = {};
+                        keys.forEach((el, i) => {
+                            const t = i / keys.length;
+                            const r = Math.round(255 * (1 - t));
+                            const b = Math.round(255 * t);
+                            el.style.background = `rgb(${r}, 0, ${b})`;
+                            el.style.color = '#fff';
+                        });
+                        if (window.api) {
+                            window.api.send({
+                                action: 'perkey-gradient',
+                                start: { r: 255, g: 0, b: 0 },
+                                end: { r: 0, g: 0, b: 255 }
+                            });
+                        }
+                        setStatus('Gradient applied!');
+                        break;
+
+                    case 'gaming':
+                        perkeyColors = {};
+                        keys.forEach(el => {
+                            el.style.background = '#222';
+                            el.style.color = '#fff';
+                        });
+                        const gamingKeys = {
+                            'W': { r: 0, g: 255, b: 255 },
+                            'A': { r: 0, g: 255, b: 255 },
+                            'S': { r: 0, g: 255, b: 255 },
+                            'D': { r: 0, g: 255, b: 255 },
+                            'UP': { r: 255, g: 255, b: 0 },
+                            'DOWN': { r: 255, g: 255, b: 0 },
+                            'LEFT': { r: 255, g: 255, b: 0 },
+                            'RIGHT': { r: 255, g: 255, b: 0 },
+                            'ESC': { r: 255, g: 255, b: 255 },
+                            'SPACE': { r: 255, g: 0, b: 255 }
+                        };
+                        for (const [k, color] of Object.entries(gamingKeys)) {
+                            perkeyColors[k] = color;
+                            const el = document.querySelector(`.perkey-key[data-key="${k}"]`);
+                            if (el) {
+                                el.style.background = `rgb(${color.r}, ${color.g}, ${color.b})`;
+                                el.style.color = '#000';
+                            }
+                        }
+                        if (window.api) {
+                            window.api.send({ action: 'perkey-all', r: 0, g: 0, b: 0 });
+                            setTimeout(() => {
+                                for (const [k, color] of Object.entries(gamingKeys)) {
+                                    window.api.send({ action: 'perkey-key', key: k, r: color.r, g: color.g, b: color.b });
+                                }
+                                setTimeout(() => window.api.send({ action: 'perkey-apply' }), 50);
+                            }, 100);
+                        }
+                        setStatus('Gaming preset applied!');
+                        break;
+
+                    case 'fill':
+                        keys.forEach(el => {
+                            const key = el.dataset.key;
+                            perkeyColors[key] = { ...currentColor };
+                            el.style.background = `rgb(${currentColor.r}, ${currentColor.g}, ${currentColor.b})`;
+                            el.style.color = (currentColor.r + currentColor.g + currentColor.b) > 380 ? '#000' : '#fff';
+                        });
+                        setStatus('Filled all keys');
+                        break;
+
+                    case 'clear':
+                        perkeyColors = {};
+                        keys.forEach(el => {
+                            el.style.background = '#222';
+                            el.style.color = '#fff';
+                        });
+                        if (window.api) window.api.send({ action: 'perkey-clear' });
+                        setStatus('Cleared all keys');
+                        break;
+                }
+
+                // Reset dropdown
+                e.target.value = '';
+            };
+
+            document.getElementById('perkeyApply').onclick = () => {
+                if (window.api) {
+                    // First clear all keys in backend
+                    window.api.send({ action: 'perkey-all', r: 0, g: 0, b: 0 });
+
+                    // Then send painted key colors and apply
+                    setTimeout(() => {
+                        for (const [key, color] of Object.entries(perkeyColors)) {
+                            window.api.send({ action: 'perkey-key', key, r: color.r, g: color.g, b: color.b });
+                        }
+                        setTimeout(() => {
+                            window.api.send({ action: 'perkey-apply' });
+                        }, 50);
+                    }, 100);
+                }
+                setStatus('Applying per-key colors...');
+            };
+
+            // Reactive mode toggle
+            let reactiveActive = false;
+            document.getElementById('perkeyReactive').onclick = () => {
+                reactiveActive = !reactiveActive;
+                const btn = document.getElementById('perkeyReactive');
+
+                if (reactiveActive) {
+                    btn.innerHTML = '<span class="material-symbols-outlined">bolt</span> Reactive Mode (ON)';
+                    btn.classList.remove('btn-secondary');
+                    btn.classList.add('btn-primary');
+
+                    if (window.api) {
+                        window.api.send({
+                            action: 'toggle-reactive',
+                            active: true,
+                            color: { ...currentColor }
+                        });
+                    }
+                    setStatus('Reactive mode ON - type to see effect!');
+                } else {
+                    btn.innerHTML = '<span class="material-symbols-outlined">bolt</span> Reactive Mode (OFF)';
+                    btn.classList.remove('btn-primary');
+                    btn.classList.add('btn-secondary');
+
+                    if (window.api) {
+                        window.api.send({ action: 'toggle-reactive', active: false });
+                    }
+                    setStatus('Reactive mode OFF');
+                }
+            };
+        }
+
+        // Neighbor Flash Toggle Handler
+        if (document.getElementById('neighborFlashToggle')) {
+            const toggle = document.getElementById('neighborFlashToggle');
+            const sw = document.getElementById('neighborFlashSwitch');
+
+            toggle.onchange = () => {
+                const active = toggle.checked;
+                sw.style.background = active ? 'white' : 'var(--border)';
+
+                if (window.api) {
+                    window.api.send({ action: 'toggle-neighbor-flash', active });
+                }
+                setStatus('Neighbor Flash: ' + (active ? 'ON' : 'OFF'));
+            };
+        }
+    </script>
+</body>
+
+</html>

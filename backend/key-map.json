@@ -1,0 +1,25 @@
+{
+    "0": "esc",
+    "1": "f1",
+    "2": "f2",
+    "3": "f3",
+    "4": "f4",
+    "5": "f5",
+    "_comment": "Additional keys working but indices unknown:",
+    "_working_keys": [
+        "a",
+        "e",
+        "n",
+        "k",
+        "p",
+        "=",
+        "+",
+        "scroll_lock",
+        "left_ctrl",
+        "right_ctrl",
+        "page_down",
+        "5",
+        "f7"
+    ],
+    "_instructions": "Use CAPTURE-GUIDE.md to map more keys"
+}

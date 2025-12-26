@@ -1,0 +1,61 @@
+{
+    "name": "nebula-cb-gk16",
+    "version": "1.0.0",
+    "description": "Open-source RGB Controller for Cosmic Byte CB-GK-16 Firefly Keyboard",
+    "main": "main.js",
+    "author": "Bombocloot",
+    "license": "MIT",
+    "homepage": "https://github.com/Bombocloot/nebula-cb-gk16",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Bombocloot/nebula-cb-gk16.git"
+    },
+    "keywords": [
+        "cosmic-byte",
+        "firefly",
+        "cb-gk-16",
+        "rgb",
+        "keyboard",
+        "controller",
+        "per-key",
+        "holtek"
+    ],
+    "scripts": {
+        "start": "electron .",
+        "build": "electron-builder --win",
+        "build:dir": "electron-builder --win --dir"
+    },
+    "dependencies": {
+        "node-hid": "^2.1.2"
+    },
+    "devDependencies": {
+        "electron": "^28.0.0",
+        "electron-builder": "^24.9.1"
+    },
+    "build": {
+        "appId": "com.bombocloot.nebula",
+        "productName": "Nebula",
+        "directories": {
+            "output": "dist"
+        },
+        "win": {
+            "target": [
+                "nsis",
+                "portable"
+            ],
+            "icon": "src/assets/icon.ico"
+        },
+        "nsis": {
+            "oneClick": false,
+            "allowToChangeInstallationDirectory": true
+        },
+        "files": [
+            "main.js",
+            "preload.js",
+            "src/**/*",
+            "backend/**/*",
+            "!backend/test-*.js",
+            "!backend/debug-*.js"
+        ]
+    }
+}

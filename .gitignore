@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+out/
+
+# Archive (development files)
+backend/archive/
+
+# Electron
+.electron/
+
+# Test files
+backend/test-*.js
+backend/debug-*.js
+backend/direct-*.js
+backend/fullscan-*.js
+backend/smart-*.js
+backend/ripple-*.js
+backend/reactive-*.js
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Temporary files
+*.tmp
+*.temp

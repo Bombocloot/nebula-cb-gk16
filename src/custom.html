@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Nebula - Custom Editor</title>
+    <style>
+        body {
+            background: #111;
+            color: #fff;
+            font-family: sans-serif;
+            user-select: none;
+            overflow: hidden;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .kb {
+            display: grid;
+            grid-template-columns: repeat(17, 40px);
+            grid-gap: 4px;
+            margin-top: 30px;
+            justify-content: center;
+        }
+
+        .key {
+            width: 40px;
+            height: 40px;
+            background: #ff0000;
+            border: 2px solid #555;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            cursor: pointer;
+            transition: 0.1s;
+        }
+
+        .key:hover {
+            border-color: #fff;
+            transform: scale(1.05);
+        }
+
+        .key.w15 {
+            grid-column: span 2;
+            width: 60px;
+        }
+
+        .key.w2 {
+            grid-column: span 2;
+            width: 84px;
+        }
+
+        .key.w25 {
+            grid-column: span 3;
+            width: 108px;
+        }
+
+        .key.w6 {
+            grid-column: span 6;
+            width: 256px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .palette {
+            display: flex;
+            gap: 8px;
+        }
+
+        .swatch {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #333;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .swatch.active {
+            border-color: #fff;
+            box-shadow: 0 0 10px #fff;
+        }
+
+        button {
+            background: #00bcd4;
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background: #00acc1;
+        }
+
+        .back {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: #444;
+            color: #fff;
+            padding: 8px 16px;
+        }
+
+        h2 {
+            text-align: center;
+            margin: 10px 0;
+            font-size: 14px;
+            color: #888;
+        }
+    </style>
+</head>
+
+<body>
+    <button class="back" onclick="location.href='index.html'">← Back</button>
+
+    <h2>SELECT COLOR, THEN CLICK KEYS TO PAINT</h2>
+
+    <div class="controls">
+        <span>Palette:</span>
+        <div class="palette" id="palette"></div>
+        <button onclick="fillAll()">FILL ALL</button>
+        <button onclick="apply()">💾 APPLY TO KEYBOARD</button>
+    </div>
+
+    <div class="kb" id="kb"></div>
+
+    <script>
+        const { ipcRenderer } = require('electron');
+
+        // 7 Preset Colors (Protocol Limitation) + Off
+        const COLORS = [
+            { name: 'Red', hex: '#ff0000' },
+            { name: 'Green', hex: '#00ff00' },
+            { name: 'Yellow', hex: '#ffff00' },
+            { name: 'Blue', hex: '#0000ff' },
+            { name: 'Cyan', hex: '#00ffff' },
+            { name: 'Magenta', hex: '#ff00ff' },
+            { name: 'White', hex: '#ffffff' },
+            { name: 'Off', hex: '#000000' }
+        ];
+
+        let currentColorIdx = 0; // Default to Red
+        let keyMap = []; // Will store color index (0-7) for each key
+        let keyElements = []; // DOM elements for each key
+
+        // Build Palette
+        const paletteDiv = document.getElementById('palette');
+        COLORS.forEach((c, i) => {
+            const swatch = document.createElement('div');
+            swatch.className = 'swatch' + (i === 0 ? ' active' : '');
+            swatch.style.background = c.hex;
+            swatch.title = c.name;
+            swatch.onclick = () => {
+                currentColorIdx = i;
+                document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+                swatch.classList.add('active');
+            };
+            paletteDiv.appendChild(swatch);
+        });
+
+        // TKL Keyboard Layout (87 keys)
+        const LAYOUT = [
+            // Row 0: Function row
+            ['Esc', '', 'F1', 'F2', 'F3', 'F4', '', 'F5', 'F6', 'F7', 'F8', '', 'F9', 'F10', 'F11', 'F12', 'Prt', 'Scr', 'Pau'],
+            // Row 1: Numbers
+            ['`', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', 'Bksp:w2', '', 'Ins', 'Hom', 'PgU'],
+            // Row 2: QWERTY
+            ['Tab:w15', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '[', ']', '\\:w15', '', 'Del', 'End', 'PgD'],
+            // Row 3: Home row
+            ['Caps:w2', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', "'", 'Enter:w25'],
+            // Row 4: Shift row
+            ['Shift:w25', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/', 'Shift:w2', '', '', 'Up'],
+            // Row 5: Bottom row
+            ['Ctrl:w15', 'Win', 'Alt:w15', 'Space:w6', 'Alt', 'Fn', 'Menu', 'Ctrl:w15', '', 'Left', 'Down', 'Right']
+        ];
+
+        const kb = document.getElementById('kb');
+        let keyId = 0;
+
+        LAYOUT.forEach(row => {
+            row.forEach(keyDef => {
+                if (keyDef === '') {
+                    // Spacer
+                    const spacer = document.createElement('div');
+                    spacer.style.width = '20px';
+                    kb.appendChild(spacer);
+                    return;
+                }
+
+                const parts = keyDef.split(':');
+                const label = parts[0];
+                const width = parts[1] || '';
+
+                const div = document.createElement('div');
+                div.className = 'key';
+                if (width) div.classList.add(width);
+                div.textContent = label;
+                div.dataset.id = keyId;
+                div.style.background = COLORS[0].hex; // Default red
+
+                div.onclick = () => {
+                    const idx = parseInt(div.dataset.id);
+                    keyMap[idx] = currentColorIdx;
+                    div.style.background = COLORS[currentColorIdx].hex;
+                };
+
+                kb.appendChild(div);
+                keyElements.push(div);
+                keyMap.push(0); // Default to Red
+                keyId++;
+            });
+        });
+
+        function fillAll() {
+            keyMap = keyMap.map(() => currentColorIdx);
+            keyElements.forEach(el => {
+                el.style.background = COLORS[currentColorIdx].hex;
+            });
+        }
+
+        function apply() {
+            // Pad to 126 keys (protocol expects 126)
+            const map = [...keyMap];
+            while (map.length < 126) map.push(0);
+
+            ipcRenderer.invoke('update-settings', { custom: true, map: map });
+        }
+    </script>
+</body>
+
+</html>

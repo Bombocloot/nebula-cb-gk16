@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Nebula - Smart Adaptive Lighting</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#c813ec",
+                        "background-light": "#f8f6f8",
+                        "background-dark": "#1f1022",
+                        "surface-dark": "#2a1b30",
+                        "surface-light": "#ffffff",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark text-slate-900 dark:text-white antialiased selection:bg-primary selection:text-white overflow-hidden flex flex-col h-screen">
+<header class="flex-none flex items-center justify-between whitespace-nowrap border-b border-gray-200 dark:border-white/10 px-6 py-4 bg-surface-light dark:bg-surface-dark/50 backdrop-blur-md sticky top-0 z-50 drag-region">
+<div class="flex items-center gap-3">
+<div class="size-6 text-primary">
+<svg class="w-full h-full" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M42.4379 44C42.4379 44 36.0744 33.9038 41.1692 24C46.8624 12.9336 42.2078 4 42.2078 4L7.01134 4C7.01134 4 11.6577 12.932 5.96912 23.9969C0.876273 33.9029 7.27094 44 7.27094 44L42.4379 44Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-lg font-bold leading-tight tracking-wide">Nebula</h2>
+</div>
+<div class="flex gap-2 items-center">
+<button class="size-3 rounded-full bg-[#FEBC2E] hover:bg-[#FEBC2E]/80 border border-black/10 transition-colors shadow-sm"></button>
+<button class="size-3 rounded-full bg-[#28C840] hover:bg-[#28C840]/80 border border-black/10 transition-colors shadow-sm"></button>
+<button class="size-3 rounded-full bg-[#FF5F57] hover:bg-[#FF5F57]/80 border border-black/10 transition-colors shadow-sm"></button>
+</div>
+</header>
+<nav class="flex-none bg-background-light dark:bg-background-dark border-b border-gray-200 dark:border-white/5 py-3">
+<div class="layout-content-container flex flex-col max-w-5xl mx-auto w-full px-6">
+<div class="flex gap-2 overflow-x-auto no-scrollbar">
+<a class="group flex items-center justify-center rounded-full px-4 py-2 hover:bg-gray-200 dark:hover:bg-white/10 transition-colors" href="#">
+<p class="text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white text-sm font-bold tracking-wide">Keyboard</p>
+</a>
+<a class="group flex items-center justify-center rounded-full px-4 py-2 hover:bg-gray-200 dark:hover:bg-white/10 transition-colors" href="#">
+<p class="text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white text-sm font-bold tracking-wide">Lighting</p>
+</a>
+<a class="flex items-center justify-center rounded-full bg-primary px-4 py-2 shadow-lg shadow-primary/25 transition-all" href="#">
+<p class="text-white text-sm font-bold tracking-wide">Smart</p>
+</a>
+<a class="group flex items-center justify-center rounded-full px-4 py-2 hover:bg-gray-200 dark:hover:bg-white/10 transition-colors" href="#">
+<p class="text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white text-sm font-bold tracking-wide">Stats</p>
+</a>
+<a class="group flex items-center justify-center rounded-full px-4 py-2 hover:bg-gray-200 dark:hover:bg-white/10 transition-colors" href="#">
+<p class="text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white text-sm font-bold tracking-wide">Custom</p>
+</a>
+</div>
+</div>
+</nav>
+<main class="flex-1 overflow-y-auto w-full">
+<div class="max-w-5xl mx-auto px-6 py-8 flex flex-col gap-6">
+<div class="flex flex-col gap-2">
+<h1 class="text-3xl md:text-4xl font-black leading-tight tracking-tight">Adaptive Lighting Control</h1>
+<p class="text-gray-600 dark:text-gray-400 text-base max-w-2xl">Automatically dim or change lighting based on your typing activity to save power and reduce distractions.</p>
+</div>
+<div class="@container">
+<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-xl border border-gray-200 dark:border-white/10 bg-surface-light dark:bg-surface-dark p-6 shadow-sm">
+<div class="flex items-start gap-4">
+<div class="p-3 rounded-full bg-primary/10 text-primary">
+<span class="material-symbols-outlined text-2xl">auto_awesome</span>
+</div>
+<div class="flex flex-col gap-1">
+<p class="text-lg font-bold leading-tight">Smart Mode</p>
+<p class="text-gray-500 dark:text-gray-400 text-sm">Enable intelligent lighting adjustments based on activity.</p>
+</div>
+</div>
+<label class="relative flex h-[32px] w-[56px] cursor-pointer items-center rounded-full border-2 border-transparent bg-gray-300 dark:bg-white/10 p-0.5 transition-colors duration-200 has-[:checked]:bg-primary has-[:checked]:justify-end">
+<div class="h-full w-[26px] rounded-full bg-white shadow-md transform transition-transform"></div>
+<input checked="" class="invisible absolute" type="checkbox"/>
+</label>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<div class="flex flex-col gap-6">
+<div class="rounded-xl border border-gray-200 dark:border-white/10 bg-surface-light dark:bg-surface-dark p-6 shadow-sm">
+<h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">palette</span>
+                        Active State Color
+                    </h3>
+<p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Lighting color when typing is detected.</p>
+<div class="flex flex-wrap gap-3">
+<button class="size-10 rounded-full bg-primary ring-2 ring-offset-2 ring-offset-surface-light dark:ring-offset-surface-dark ring-primary cursor-pointer transition-transform hover:scale-105"></button>
+<button class="size-10 rounded-full bg-blue-500 cursor-pointer hover:opacity-80 transition-transform hover:scale-105"></button>
+<button class="size-10 rounded-full bg-cyan-400 cursor-pointer hover:opacity-80 transition-transform hover:scale-105"></button>
+<button class="size-10 rounded-full bg-red-500 cursor-pointer hover:opacity-80 transition-transform hover:scale-105"></button>
+<button class="size-10 rounded-full bg-white/10 border border-dashed border-gray-400 flex items-center justify-center text-gray-400 hover:text-white hover:border-white transition-colors">
+<span class="material-symbols-outlined text-lg">add</span>
+</button>
+</div>
+</div>
+<div class="rounded-xl border border-gray-200 dark:border-white/10 bg-surface-light dark:bg-surface-dark p-6 shadow-sm">
+<h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-gray-400">nights_stay</span>
+                        Idle State Color
+                    </h3>
+<p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Lighting color after inactivity timeout.</p>
+<div class="flex flex-wrap gap-3">
+<button class="size-10 rounded-full bg-gray-800 border border-white/10 cursor-pointer hover:opacity-80 transition-transform hover:scale-105"></button>
+<button class="size-10 rounded-full bg-indigo-900 ring-2 ring-offset-2 ring-offset-surface-light dark:ring-offset-surface-dark ring-primary/50 cursor-pointer transition-transform hover:scale-105"></button>
+<button class="size-10 rounded-full bg-purple-900 cursor-pointer hover:opacity-80 transition-transform hover:scale-105"></button>
+<button class="size-10 rounded-full bg-transparent border border-white/20 cursor-pointer hover:bg-white/5 transition-transform hover:scale-105 relative overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent"></div>
+</button>
+<button class="size-10 rounded-full bg-white/10 border border-dashed border-gray-400 flex items-center justify-center text-gray-400 hover:text-white hover:border-white transition-colors">
+<span class="material-symbols-outlined text-lg">add</span>
+</button>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-6">
+<div class="rounded-xl border border-gray-200 dark:border-white/10 bg-surface-light dark:bg-surface-dark p-6 shadow-sm flex flex-col justify-between h-auto">
+<div class="mb-6">
+<div class="flex justify-between items-center mb-2">
+<h3 class="text-lg font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">timer</span>
+                                Inactivity Timeout
+                            </h3>
+<span class="px-3 py-1 rounded-md bg-primary/20 text-primary font-mono text-sm font-bold">15s</span>
+</div>
+<p class="text-sm text-gray-500 dark:text-gray-400">Seconds of inactivity before switching to idle state.</p>
+</div>
+<div class="w-full py-4">
+<div class="relative w-full h-2 bg-gray-200 dark:bg-white/10 rounded-full">
+<div class="absolute left-0 top-0 h-full w-[25%] bg-primary rounded-full"></div>
+<div class="absolute left-[25%] top-1/2 -translate-y-1/2 -translate-x-1/2 size-5 bg-white rounded-full shadow-lg border-2 border-primary cursor-pointer hover:scale-110 transition-transform"></div>
+</div>
+<div class="flex justify-between mt-2 text-xs text-gray-400 font-mono">
+<span>5s</span>
+<span>60s</span>
+</div>
+</div>
+</div>
+<div class="flex-1 rounded-xl border border-gray-200 dark:border-white/10 bg-surface-light dark:bg-surface-dark p-6 shadow-sm flex flex-col items-center justify-center text-center relative overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-50"></div>
+<div class="relative z-10 flex flex-col items-center gap-4">
+<div class="size-20 rounded-full bg-background-light dark:bg-background-dark border-4 border-gray-200 dark:border-white/5 flex items-center justify-center shadow-inner">
+<span class="material-symbols-outlined text-4xl text-gray-400 dark:text-gray-600">bedtime</span>
+</div>
+<div>
+<p class="text-sm font-bold tracking-widest text-gray-500 dark:text-gray-400 uppercase mb-1">Current State</p>
+<h2 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight">IDLE</h2>
+</div>
+<div class="mt-2 flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-200 dark:bg-white/5 border border-gray-300 dark:border-white/10">
+<div class="size-2 rounded-full bg-yellow-500 animate-pulse"></div>
+<span class="text-xs font-mono text-gray-600 dark:text-gray-300">Waiting for input...</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="flex justify-end pt-4">
+<button class="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-lg font-bold text-sm shadow-[0_0_20px_-5px_#c813ec] hover:shadow-[0_0_30px_-5px_#c813ec] transition-all transform hover:-translate-y-0.5">
+<span class="material-symbols-outlined text-lg">save</span>
+                Apply Settings
+            </button>
+</div>
+</div>
+</main>
+<footer class="flex-none border-t border-gray-200 dark:border-white/10 bg-surface-light dark:bg-background-dark py-2 px-6">
+<div class="flex items-center justify-between text-xs font-mono text-gray-500 dark:text-gray-400">
+<div class="flex items-center gap-4">
+<span class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm text-green-500">wifi</span>
+                    K95 RGB: Connected
+                </span>
+<span class="hidden sm:inline-block w-px h-3 bg-gray-300 dark:bg-white/20"></span>
+<span class="hidden sm:inline-block">Profile: Default</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm">sync</span>
+<span>Last Sync: Just now</span>
+</div>
+</div>
+</footer>
+
+</body></html>

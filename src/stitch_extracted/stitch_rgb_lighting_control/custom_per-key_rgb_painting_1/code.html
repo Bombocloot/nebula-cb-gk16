@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Nebula - Custom RGB Painting</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#c813ec",
+                        "background-light": "#f8f6f8",
+                        "background-dark": "#1f1122",
+                        "surface-dark": "#2d1b32",
+                        "surface-hover": "#422348",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    boxShadow: {
+                        'neon': '0 0 10px var(--tw-shadow-color)',
+                    }
+                },
+            },
+        }
+    </script>
+<style>::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1f1122;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #422348;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #c813ec;
+        }
+        .key-btn {
+            transition: all 0.15s ease-in-out;
+        }
+        .key-btn:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-hidden h-screen flex flex-col">
+<div class="h-10 bg-surface-dark flex items-center px-4 border-b border-surface-hover select-none draggable relative justify-center">
+<div class="absolute left-4 flex items-center gap-2 group">
+<button class="w-3 h-3 rounded-full bg-[#FF5F57] hover:bg-[#FF5F57]/80 flex items-center justify-center border border-black/10 transition-colors">
+<span class="material-symbols-outlined text-[8px] text-black/50 opacity-0 group-hover:opacity-100 font-bold">close</span>
+</button>
+<button class="w-3 h-3 rounded-full bg-[#FEBC2E] hover:bg-[#FEBC2E]/80 flex items-center justify-center border border-black/10 transition-colors">
+<span class="material-symbols-outlined text-[8px] text-black/50 opacity-0 group-hover:opacity-100 font-bold">remove</span>
+</button>
+<button class="w-3 h-3 rounded-full bg-[#28C840] hover:bg-[#28C840]/80 flex items-center justify-center border border-black/10 transition-colors">
+<span class="material-symbols-outlined text-[8px] text-black/50 opacity-0 group-hover:opacity-100 font-bold">open_in_full</span>
+</button>
+</div>
+<div class="flex items-center gap-2 text-white/70">
+<span class="material-symbols-outlined text-[18px]">keyboard</span>
+<span class="text-xs font-bold tracking-widest uppercase">Nebula Configurator</span>
+</div>
+</div>
+<header class="flex items-center justify-between whitespace-nowrap border-b border-surface-hover px-8 py-4 bg-background-dark">
+<div class="flex items-center gap-4 text-white">
+<div class="size-8 text-primary">
+<svg class="w-full h-full" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M42.4379 44C42.4379 44 36.0744 33.9038 41.1692 24C46.8624 12.9336 42.2078 4 42.2078 4L7.01134 4C7.01134 4 11.6577 12.932 5.96912 23.9969C0.876273 33.9029 7.27094 44 7.27094 44L42.4379 44Z" fill="currentColor"></path>
+</svg>
+</div>
+<h1 class="text-white text-2xl font-bold leading-tight tracking-tight">Nebula</h1>
+</div>
+<nav class="flex flex-1 justify-center">
+<div class="flex items-center gap-1 p-1 rounded-full bg-surface-dark border border-surface-hover">
+<a class="px-6 py-2 text-white/60 hover:text-white hover:bg-white/5 text-sm font-bold rounded-full transition-colors" href="#">Keyboard</a>
+<a class="px-6 py-2 text-white/60 hover:text-white hover:bg-white/5 text-sm font-bold rounded-full transition-colors" href="#">Lighting</a>
+<a class="px-6 py-2 text-white/60 hover:text-white hover:bg-white/5 text-sm font-bold rounded-full transition-colors" href="#">Smart</a>
+<a class="px-6 py-2 text-white/60 hover:text-white hover:bg-white/5 text-sm font-bold rounded-full transition-colors" href="#">Stats</a>
+<a class="px-6 py-2 bg-primary text-white text-sm font-bold rounded-full shadow-lg shadow-primary/20 hover:bg-[#d93ef5] transition-colors" href="#">Custom</a>
+</div>
+</nav>
+<div class="flex items-center gap-4 w-[140px] justify-end">
+<button class="size-10 flex items-center justify-center rounded-full bg-surface-dark hover:bg-surface-hover text-white transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-10 ring-2 ring-primary/50" data-alt="User avatar with nebula gradient" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCY-JViv0w5oTiwGfRs_gAOSsyZ5_c9bFSUCiWti4BsRsck2mXgBwn6p3VR9idkj-nyI135KTpmEI5fBVZGkqorffQ-zY6cooUMysU9-5DoQjy99T35aVF1rtIjORPNGL6Hegnx-hwXMf8DK49e8GZfYc_-_HYDMsMOwqKqFjTL2pb5RJ5RyH5XtEKwaLt65PPXhcB3AlGnVWd-1yK5MWReGyTihsd-xIfAQzsRhJS5pij6V_dsVg0esjvBR-Bb5ApxcFuIIBsut8vY");'></div>
+</div>
+</header>
+<main class="flex-1 flex overflow-hidden">
+<aside class="w-80 bg-surface-dark border-r border-surface-hover flex flex-col p-6 gap-8 overflow-y-auto z-10 shadow-xl">
+<div>
+<h2 class="text-white text-lg font-bold mb-1">Painting Tools</h2>
+<p class="text-white/40 text-xs mb-6">Select a color and click keys to paint.</p>
+<div class="mb-2 flex justify-between items-end">
+<span class="text-xs font-bold text-white/60 tracking-wider uppercase">Palette</span>
+<span class="text-[10px] text-primary font-mono bg-primary/10 px-2 py-0.5 rounded border border-primary/20">#FF0000</span>
+</div>
+<div class="grid grid-cols-4 gap-3 mb-8">
+<button class="aspect-square rounded-full border-2 border-white ring-4 ring-primary/50 shadow-neon shadow-red-500/50 transition-transform hover:scale-110" style="background-color: #FF0000; box-shadow: 0 0 15px rgba(255,0,0,0.5);"></button>
+<button class="aspect-square rounded-full border border-surface-hover hover:border-white transition-transform hover:scale-110" style="background-color: #00FF00;"></button>
+<button class="aspect-square rounded-full border border-surface-hover hover:border-white transition-transform hover:scale-110" style="background-color: #FFFF00;"></button>
+<button class="aspect-square rounded-full border border-surface-hover hover:border-white transition-transform hover:scale-110" style="background-color: #0000FF;"></button>
+<button class="aspect-square rounded-full border border-surface-hover hover:border-white transition-transform hover:scale-110" style="background-color: #00FFFF;"></button>
+<button class="aspect-square rounded-full border border-surface-hover hover:border-white transition-transform hover:scale-110" style="background-color: #FF00FF;"></button>
+<button class="aspect-square rounded-full border border-surface-hover hover:border-white transition-transform hover:scale-110" style="background-color: #FFFFFF;"></button>
+<button class="aspect-square rounded-full border border-surface-hover hover:border-white bg-black flex items-center justify-center group transition-transform hover:scale-110">
+<span class="material-symbols-outlined text-white/50 text-sm group-hover:text-white">block</span>
+</button>
+</div>
+<div class="h-px bg-surface-hover w-full mb-8"></div>
+<div class="flex flex-col gap-3">
+<button class="flex w-full cursor-pointer items-center justify-center rounded-lg h-12 px-4 bg-surface-hover hover:bg-[#5a3260] text-white text-sm font-bold tracking-wide transition-colors border border-white/5">
+<span class="material-symbols-outlined mr-2 text-[18px]">format_color_fill</span>
+                    FILL ALL
+                </button>
+<button class="flex w-full cursor-pointer items-center justify-center rounded-lg h-12 px-4 bg-primary hover:bg-[#d93ef5] text-white text-sm font-bold tracking-wide shadow-lg shadow-primary/25 transition-all hover:shadow-primary/40">
+<span class="material-symbols-outlined mr-2 text-[18px]">save</span>
+                    APPLY TO KEYBOARD
+                </button>
+</div>
+</div>
+<div class="mt-auto">
+<div class="p-4 rounded-xl bg-background-dark border border-surface-hover">
+<div class="flex items-center gap-3 mb-2">
+<span class="material-symbols-outlined text-primary">tips_and_updates</span>
+<span class="text-sm font-bold text-white">Pro Tip</span>
+</div>
+<p class="text-xs text-white/60 leading-relaxed">
+                    Hold <kbd class="bg-surface-hover px-1 rounded text-white border border-white/10">Ctrl</kbd> while clicking to select multiple keys at once.
+                </p>
+</div>
+</div>
+</aside>
+<div class="flex-1 bg-[url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&amp;w=2070&amp;auto=format&amp;fit=crop')] bg-cover bg-center relative" data-alt="Abstract dark geometric background">
+<div class="absolute inset-0 bg-background-dark/90 backdrop-blur-sm"></div>
+<div class="relative z-10 h-full flex flex-col">
+<div class="px-10 pt-8 pb-4 flex justify-between items-end">
+<div>
+<h2 class="text-white text-3xl font-bold">Per-Key RGB</h2>
+<p class="text-white/50 mt-1 font-light">Customize lighting zones for Nebula TKL-87</p>
+</div>
+<div class="flex items-center gap-2 bg-black/40 px-3 py-1.5 rounded-full border border-white/10 backdrop-blur-md">
+<div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+<span class="text-xs font-mono text-green-400">DEVICE CONNECTED</span>
+</div>
+</div>
+<div class="flex-1 flex items-center justify-center p-8 overflow-auto">
+<div class="bg-[#150b18] p-6 rounded-2xl border border-surface-hover shadow-2xl relative">
+<div class="absolute -inset-4 bg-primary/10 blur-3xl rounded-full -z-10"></div>
+<div class="flex justify-between mb-4 gap-8">
+<div class="flex gap-1">
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center shadow-inner" style="box-shadow: 0 0 10px #FF0000, inset 0 0 5px rgba(255,255,255,0.2); border-color: #FF0000; color: white;">ESC</button>
+</div>
+<div class="flex gap-8">
+<div class="flex gap-1">
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">F1</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">F2</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">F3</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">F4</button>
+</div>
+<div class="flex gap-1">
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">F5</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center" style="box-shadow: 0 0 10px #00FFFF, inset 0 0 5px rgba(255,255,255,0.2); border-color: #00FFFF; color: white;">F6</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center" style="box-shadow: 0 0 10px #00FFFF, inset 0 0 5px rgba(255,255,255,0.2); border-color: #00FFFF; color: white;">F7</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center" style="box-shadow: 0 0 10px #00FFFF, inset 0 0 5px rgba(255,255,255,0.2); border-color: #00FFFF; color: white;">F8</button>
+</div>
+<div class="flex gap-1">
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">F9</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">F10</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">F11</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">F12</button>
+</div>
+</div>
+<div class="flex gap-1">
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">PRT</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">SCR</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">PAU</button>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="flex flex-col gap-1">
+<div class="flex gap-1">
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">~</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">1</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">2</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">3</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">4</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center" style="box-shadow: 0 0 10px #C813EC, inset 0 0 5px rgba(255,255,255,0.2); border-color: #C813EC; color: white;">5</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center" style="box-shadow: 0 0 10px #C813EC, inset 0 0 5px rgba(255,255,255,0.2); border-color: #C813EC; color: white;">6</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">7</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">8</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">9</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">0</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">-</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">=</button>
+<button class="key-btn w-[100px] h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">BACKSPACE</button>
+</div>
+<div class="flex gap-1">
+<button class="key-btn w-[74px] h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">TAB</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">Q</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center" style="box-shadow: 0 0 10px #FF0000, inset 0 0 5px rgba(255,255,255,0.2); border-color: #FF0000; color: white;">W</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">E</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">R</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center" style="box-shadow: 0 0 10px #C813EC, inset 0 0 5px rgba(255,255,255,0.2); border-color: #C813EC; color: white;">T</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center" style="box-shadow: 0 0 10px #C813EC, inset 0 0 5px rgba(255,255,255,0.2); border-color: #C813EC; color: white;">Y</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">U</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">I</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">O</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">P</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">[</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">]</button>
+<button class="key-btn w-[74px] h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">\</button>
+</div>
+<div class="flex gap-1">
+<button class="key-btn w-[90px] h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">CAPS</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center" style="box-shadow: 0 0 10px #FF0000, inset 0 0 5px rgba(255,255,255,0.2); border-color: #FF0000; color: white;">A</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center" style="box-shadow: 0 0 10px #FF0000, inset 0 0 5px rgba(255,255,255,0.2); border-color: #FF0000; color: white;">S</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center" style="box-shadow: 0 0 10px #FF0000, inset 0 0 5px rgba(255,255,255,0.2); border-color: #FF0000; color: white;">D</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">F</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center" style="box-shadow: 0 0 10px #C813EC, inset 0 0 5px rgba(255,255,255,0.2); border-color: #C813EC; color: white;">G</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center" style="box-shadow: 0 0 10px #C813EC, inset 0 0 5px rgba(255,255,255,0.2); border-color: #C813EC; color: white;">H</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">J</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">K</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">L</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">;</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">'</button>
+<button class="key-btn w-[114px] h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">ENTER</button>
+</div>
+<div class="flex gap-1">
+<button class="key-btn w-[114px] h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">SHIFT</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">Z</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">X</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">C</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">V</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center" style="box-shadow: 0 0 10px #C813EC, inset 0 0 5px rgba(255,255,255,0.2); border-color: #C813EC; color: white;">B</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">N</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">M</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">,</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">.</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">/</button>
+<button class="key-btn w-[140px] h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">SHIFT</button>
+</div>
+<div class="flex gap-1">
+<button class="key-btn w-[68px] h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">CTRL</button>
+<button class="key-btn w-[68px] h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">WIN</button>
+<button class="key-btn w-[68px] h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">ALT</button>
+<button class="key-btn w-[314px] h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">SPACE</button>
+<button class="key-btn w-[68px] h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">ALT</button>
+<button class="key-btn w-[68px] h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">FN</button>
+<button class="key-btn w-[68px] h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">MENU</button>
+<button class="key-btn w-[68px] h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">CTRL</button>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex gap-1 mb-4">
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">INS</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">HOME</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">PGUP</button>
+</div>
+<div class="flex gap-1 mb-[56px]">
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">DEL</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">END</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">PGDN</button>
+</div>
+<div class="flex flex-col gap-1 items-center">
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">arrow_upward</span>
+</button>
+<div class="flex gap-1">
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">arrow_back</span>
+</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">arrow_downward</span>
+</button>
+<button class="key-btn w-12 h-12 rounded border border-white/10 bg-surface-dark hover:bg-surface-hover text-white/70 text-[10px] font-bold flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<footer class="h-10 bg-surface-dark border-t border-surface-hover flex items-center justify-between px-6 z-20">
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2 text-xs text-white/60">
+<span class="material-symbols-outlined text-[16px]">usb</span>
+<span>Connected via USB 3.0</span>
+</div>
+<div class="h-3 w-px bg-white/10"></div>
+<div class="flex items-center gap-2 text-xs text-white/60">
+<span class="material-symbols-outlined text-[16px]">speed</span>
+<span>Polling Rate: 1000Hz</span>
+</div>
+</div>
+<div class="text-xs text-white/40 font-mono">
+                    Profile: <span class="text-primary font-bold">GAMING_FPS_01</span>
+</div>
+</footer>
+</div>
+</div>
+</main>
+</body></html>

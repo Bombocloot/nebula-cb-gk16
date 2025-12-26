@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Nebula - Typing Statistics Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#c813ec",
+                        "background-light": "#f8f6f8",
+                        "background-dark": "#1f1022",
+                        "card-dark": "#2d1b32",
+                        "card-dark-hover": "#36203c",
+                        "accent-green": "#0bda7a",
+                        "accent-red": "#ef4444",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1f1022; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #422348; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #5e3267; 
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-hidden h-screen w-screen flex flex-col">
+<header class="flex-none flex items-center justify-between whitespace-nowrap border-b border-solid border-[#422348] bg-[#1f1122] px-6 py-3 select-none draggable">
+<div class="flex items-center gap-3 text-white">
+<div class="size-6 text-primary">
+<svg class="h-full w-full" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M42.4379 44C42.4379 44 36.0744 33.9038 41.1692 24C46.8624 12.9336 42.2078 4 42.2078 4L7.01134 4C7.01134 4 11.6577 12.932 5.96912 23.9969C0.876273 33.9029 7.27094 44 7.27094 44L42.4379 44Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em]">Nebula</h2>
+</div>
+<div class="flex gap-2 items-center px-1">
+<button class="size-3 rounded-full bg-[#FF5F57] hover:brightness-75 transition-all cursor-pointer"></button>
+<button class="size-3 rounded-full bg-[#FFBD2E] hover:brightness-75 transition-all cursor-pointer"></button>
+<button class="size-3 rounded-full bg-[#28C840] hover:brightness-75 transition-all cursor-pointer"></button>
+</div>
+</header>
+<div class="flex-none bg-[#1f1122] border-b border-[#422348]">
+<div class="flex px-6 py-3 gap-2">
+<a class="flex items-center justify-center px-5 py-2 rounded-full text-[#c092c9] hover:bg-[#422348] hover:text-white transition-all" href="#">
+<span class="text-sm font-bold leading-normal tracking-[0.015em]">Keyboard</span>
+</a>
+<a class="flex items-center justify-center px-5 py-2 rounded-full text-[#c092c9] hover:bg-[#422348] hover:text-white transition-all" href="#">
+<span class="text-sm font-bold leading-normal tracking-[0.015em]">Lighting</span>
+</a>
+<a class="flex items-center justify-center px-5 py-2 rounded-full text-[#c092c9] hover:bg-[#422348] hover:text-white transition-all" href="#">
+<span class="text-sm font-bold leading-normal tracking-[0.015em]">Smart</span>
+</a>
+<a class="flex items-center justify-center px-5 py-2 rounded-full bg-primary text-white shadow-lg shadow-primary/20" href="#">
+<span class="text-sm font-bold leading-normal tracking-[0.015em]">Stats</span>
+</a>
+<a class="flex items-center justify-center px-5 py-2 rounded-full text-[#c092c9] hover:bg-[#422348] hover:text-white transition-all" href="#">
+<span class="text-sm font-bold leading-normal tracking-[0.015em]">Custom</span>
+</a>
+</div>
+</div>
+<main class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark p-6 md:p-10">
+<div class="mx-auto max-w-[1200px] flex flex-col gap-8">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div>
+<h1 class="text-white tracking-tight text-3xl font-bold leading-tight">Typing Analytics</h1>
+<p class="text-[#c092c9] text-sm mt-1">Session started today at 09:42 AM</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#422348] text-white hover:bg-[#5e3267] transition-colors border border-transparent hover:border-primary/50 text-sm font-bold">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-green opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-accent-green"></span>
+</span>
+                        Auto-update on
+                    </button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors border border-red-500/20 text-sm font-bold">
+<span class="material-symbols-outlined text-[18px]">restart_alt</span>
+                        Reset Stats
+                    </button>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+<div class="flex flex-col justify-between rounded-xl p-6 bg-gradient-to-br from-[#422348] to-[#2d1b32] border border-[#5e3267] shadow-lg relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl text-white">keyboard</span>
+</div>
+<div class="flex flex-col gap-1 z-10">
+<p class="text-[#c092c9] text-sm font-medium uppercase tracking-wider">Lifetime Keystrokes</p>
+<p class="text-white text-4xl font-bold tracking-tight">1,204,592</p>
+</div>
+<div class="mt-4 flex items-center gap-2 text-accent-green text-sm font-medium z-10">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<span>+12% vs last week</span>
+</div>
+</div>
+<div class="flex flex-col justify-between rounded-xl p-6 bg-primary/10 border border-primary/30 shadow-[0_0_15px_rgba(200,19,236,0.15)] relative overflow-hidden">
+<div class="flex justify-between items-start">
+<div class="flex flex-col gap-1">
+<p class="text-primary text-sm font-medium uppercase tracking-wider flex items-center gap-2">
+<span class="block w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                                Live KPM
+                            </p>
+<p class="text-white text-5xl font-bold tracking-tight mt-1">92</p>
+</div>
+<div class="bg-primary/20 p-2 rounded-lg">
+<span class="material-symbols-outlined text-primary text-2xl">speed</span>
+</div>
+</div>
+<div class="mt-6 flex items-end gap-1 h-8 opacity-80">
+<div class="w-1/12 bg-primary/20 h-[30%] rounded-t-sm"></div>
+<div class="w-1/12 bg-primary/30 h-[50%] rounded-t-sm"></div>
+<div class="w-1/12 bg-primary/40 h-[40%] rounded-t-sm"></div>
+<div class="w-1/12 bg-primary/50 h-[70%] rounded-t-sm"></div>
+<div class="w-1/12 bg-primary/30 h-[45%] rounded-t-sm"></div>
+<div class="w-1/12 bg-primary/60 h-[80%] rounded-t-sm"></div>
+<div class="w-1/12 bg-primary/40 h-[60%] rounded-t-sm"></div>
+<div class="w-1/12 bg-primary/70 h-[90%] rounded-t-sm"></div>
+<div class="w-1/12 bg-primary/50 h-[55%] rounded-t-sm"></div>
+<div class="w-1/12 bg-primary/80 h-[75%] rounded-t-sm"></div>
+<div class="w-1/12 bg-primary/90 h-[95%] rounded-t-sm"></div>
+<div class="w-1/12 bg-primary h-[85%] rounded-t-sm animate-pulse"></div>
+</div>
+</div>
+<div class="flex flex-col gap-4 rounded-xl p-6 bg-[#2d1b32] border border-[#422348]">
+<div class="flex items-center justify-between">
+<p class="text-[#c092c9] text-sm font-medium uppercase tracking-wider">Session Duration</p>
+<span class="material-symbols-outlined text-[#c092c9]">timer</span>
+</div>
+<p class="text-white text-3xl font-bold tracking-tight">02:14:55</p>
+<div class="w-full bg-[#422348] rounded-full h-1.5 mt-auto">
+<div class="bg-[#c092c9] h-1.5 rounded-full" style="width: 65%"></div>
+</div>
+</div>
+<div class="flex flex-col gap-4 rounded-xl p-6 bg-[#2d1b32] border border-[#422348]">
+<div class="flex items-center justify-between">
+<p class="text-[#c092c9] text-sm font-medium uppercase tracking-wider">Session Keys</p>
+<span class="material-symbols-outlined text-[#c092c9]">ads_click</span>
+</div>
+<p class="text-white text-3xl font-bold tracking-tight">4,302</p>
+<p class="text-xs text-slate-400 mt-auto">Avg. 1.8 keys/sec</p>
+</div>
+</div>
+<div class="flex flex-col gap-4 bg-[#2d1b32] rounded-xl border border-[#422348] p-6 pb-8">
+<div class="flex items-center justify-between pb-4 border-b border-[#422348]">
+<h3 class="text-white text-lg font-bold leading-tight">Top 10 Most Pressed Keys</h3>
+<button class="text-[#c092c9] hover:text-white text-sm font-medium flex items-center gap-1 transition-colors">
+                        View All <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-4 mt-2">
+<div class="flex flex-col gap-4">
+<div class="flex items-center gap-4 group">
+<div class="flex-none flex items-center justify-center w-10 h-10 rounded bg-[#422348] text-white font-bold border border-[#5e3267] group-hover:border-primary transition-colors">
+                                W
+                            </div>
+<div class="flex-1 flex flex-col gap-1">
+<div class="flex justify-between text-xs font-medium">
+<span class="text-white">5,021 presses</span>
+<span class="text-[#c092c9]">14.2%</span>
+</div>
+<div class="h-2 w-full bg-[#1f1122] rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 90%"></div>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4 group">
+<div class="flex-none flex items-center justify-center w-10 h-10 rounded bg-[#422348] text-white font-bold border border-[#5e3267] group-hover:border-primary transition-colors">
+                                A
+                            </div>
+<div class="flex-1 flex flex-col gap-1">
+<div class="flex justify-between text-xs font-medium">
+<span class="text-white">4,012 presses</span>
+<span class="text-[#c092c9]">11.8%</span>
+</div>
+<div class="h-2 w-full bg-[#1f1122] rounded-full overflow-hidden">
+<div class="h-full bg-primary/80 rounded-full" style="width: 75%"></div>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4 group">
+<div class="flex-none flex items-center justify-center w-10 h-10 rounded bg-[#422348] text-white font-bold border border-[#5e3267] group-hover:border-primary transition-colors">
+                                S
+                            </div>
+<div class="flex-1 flex flex-col gap-1">
+<div class="flex justify-between text-xs font-medium">
+<span class="text-white">3,990 presses</span>
+<span class="text-[#c092c9]">11.5%</span>
+</div>
+<div class="h-2 w-full bg-[#1f1122] rounded-full overflow-hidden">
+<div class="h-full bg-primary/70 rounded-full" style="width: 73%"></div>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4 group">
+<div class="flex-none flex items-center justify-center w-10 h-10 rounded bg-[#422348] text-white font-bold border border-[#5e3267] group-hover:border-primary transition-colors">
+                                D
+                            </div>
+<div class="flex-1 flex flex-col gap-1">
+<div class="flex justify-between text-xs font-medium">
+<span class="text-white">4,100 presses</span>
+<span class="text-[#c092c9]">12.0%</span>
+</div>
+<div class="h-2 w-full bg-[#1f1122] rounded-full overflow-hidden">
+<div class="h-full bg-primary/75 rounded-full" style="width: 78%"></div>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4 group">
+<div class="flex-none flex items-center justify-center w-10 h-10 rounded bg-[#422348] text-white font-bold border border-[#5e3267] group-hover:border-primary transition-colors">
+                                Space
+                            </div>
+<div class="flex-1 flex flex-col gap-1">
+<div class="flex justify-between text-xs font-medium">
+<span class="text-white">3,500 presses</span>
+<span class="text-[#c092c9]">9.8%</span>
+</div>
+<div class="h-2 w-full bg-[#1f1122] rounded-full overflow-hidden">
+<div class="h-full bg-primary/60 rounded-full" style="width: 60%"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-4">
+<div class="flex items-center gap-4 group">
+<div class="flex-none flex items-center justify-center w-10 h-10 rounded bg-[#422348] text-white font-bold border border-[#5e3267] group-hover:border-primary transition-colors">
+                                E
+                            </div>
+<div class="flex-1 flex flex-col gap-1">
+<div class="flex justify-between text-xs font-medium">
+<span class="text-white">2,800 presses</span>
+<span class="text-[#c092c9]">7.5%</span>
+</div>
+<div class="h-2 w-full bg-[#1f1122] rounded-full overflow-hidden">
+<div class="h-full bg-primary/50 rounded-full" style="width: 50%"></div>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4 group">
+<div class="flex-none flex items-center justify-center w-10 h-10 rounded bg-[#422348] text-white font-bold border border-[#5e3267] group-hover:border-primary transition-colors">
+                                Shift
+                            </div>
+<div class="flex-1 flex flex-col gap-1">
+<div class="flex justify-between text-xs font-medium">
+<span class="text-white">2,100 presses</span>
+<span class="text-[#c092c9]">5.2%</span>
+</div>
+<div class="h-2 w-full bg-[#1f1122] rounded-full overflow-hidden">
+<div class="h-full bg-primary/40 rounded-full" style="width: 40%"></div>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4 group">
+<div class="flex-none flex items-center justify-center w-10 h-10 rounded bg-[#422348] text-white font-bold border border-[#5e3267] group-hover:border-primary transition-colors">
+                                R
+                            </div>
+<div class="flex-1 flex flex-col gap-1">
+<div class="flex justify-between text-xs font-medium">
+<span class="text-white">1,950 presses</span>
+<span class="text-[#c092c9]">4.8%</span>
+</div>
+<div class="h-2 w-full bg-[#1f1122] rounded-full overflow-hidden">
+<div class="h-full bg-primary/30 rounded-full" style="width: 35%"></div>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4 group">
+<div class="flex-none flex items-center justify-center w-10 h-10 rounded bg-[#422348] text-white font-bold border border-[#5e3267] group-hover:border-primary transition-colors">
+                                Ctrl
+                            </div>
+<div class="flex-1 flex flex-col gap-1">
+<div class="flex justify-between text-xs font-medium">
+<span class="text-white">1,200 presses</span>
+<span class="text-[#c092c9]">3.1%</span>
+</div>
+<div class="h-2 w-full bg-[#1f1122] rounded-full overflow-hidden">
+<div class="h-full bg-primary/20 rounded-full" style="width: 25%"></div>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4 group">
+<div class="flex-none flex items-center justify-center w-10 h-10 rounded bg-[#422348] text-white font-bold border border-[#5e3267] group-hover:border-primary transition-colors">
+                                Tab
+                            </div>
+<div class="flex-1 flex flex-col gap-1">
+<div class="flex justify-between text-xs font-medium">
+<span class="text-white">980 presses</span>
+<span class="text-[#c092c9]">2.4%</span>
+</div>
+<div class="h-2 w-full bg-[#1f1122] rounded-full overflow-hidden">
+<div class="h-full bg-primary/10 rounded-full" style="width: 18%"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="h-8"></div>
+</div>
+</main>
+<footer class="flex-none border-t border-[#422348] bg-[#1a0e1c] text-[#c092c9] px-6 py-2 text-xs font-medium select-none">
+<div class="flex justify-between items-center max-w-[1200px] mx-auto w-full">
+<div class="flex gap-6">
+<span class="flex items-center gap-2">
+<span class="h-2 w-2 rounded-full bg-accent-green"></span>
+                    Device: Nebula 65% (USB-C)
+                </span>
+<span class="flex items-center gap-2 border-l border-[#422348] pl-6">
+<span class="material-symbols-outlined text-[14px]">sports_esports</span>
+                    Profile: Gaming
+                </span>
+</div>
+<div class="flex gap-6">
+<span class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[14px]">cloud_done</span>
+                     Status: Synced
+                </span>
+<span class="opacity-60">
+                    App v2.4.1
+                </span>
+</div>
+</div>
+</footer>
+
+</body></html>

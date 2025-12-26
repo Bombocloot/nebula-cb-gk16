@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Nebula - Keyboard Configurator</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#c813ec",
+                        "background-light": "#f8f6f8",
+                        "background-dark": "#1f1022",
+                        "surface-dark": "#2d1b32",
+                        "surface-darker": "#150b18",
+                        "key-base": "#2a152e",
+                        "key-active": "#5e236b",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                    boxShadow: {
+                        'glow': '0 0 15px -3px rgba(200, 19, 236, 0.3)',
+                        'key': '0 4px 0 0 #150b18',
+                        'key-active': '0 2px 0 0 #3d1245',
+                    }
+                },
+            },
+        }
+    </script>
+<style>::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1f1022; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #422348; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #c813ec; 
+        }
+        .key-btn {
+            @apply relative flex items-center justify-center rounded bg-key-base text-gray-300 font-bold text-sm shadow-key transition-all duration-100 hover:text-white hover:-translate-y-0.5 hover:shadow-[0_5px_0_0_#150b18] hover:bg-[#3d1e42] active:translate-y-1 active:shadow-none select-none cursor-pointer border border-[#422348]/50;
+        }
+        .key-btn.active-key {
+            @apply border-primary/60 bg-primary/20 text-white shadow-[0_0_10px_rgba(200,19,236,0.3)] shadow-key;
+        }
+        .key-btn.special {
+            @apply text-[10px] font-medium text-gray-400;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-white overflow-hidden h-screen flex flex-col antialiased selection:bg-primary selection:text-white">
+<div class="flex flex-col h-full w-full max-w-[1920px] mx-auto border-x border-white/5 bg-[#1f1122]">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-white/10 px-6 py-3 shrink-0 drag-region select-none bg-[#180d1b]">
+<div class="flex items-center gap-3 text-white">
+<div class="size-6 text-primary animate-pulse">
+<svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M42.4379 44C42.4379 44 36.0744 33.9038 41.1692 24C46.8624 12.9336 42.2078 4 42.2078 4L7.01134 4C7.01134 4 11.6577 12.932 5.96912 23.9969C0.876273 33.9029 7.27094 44 7.27094 44L42.4379 44Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-white text-lg font-bold leading-tight tracking-wide uppercase">Nebula</h2>
+</div>
+<div class="flex gap-2.5 items-center">
+<button class="size-3.5 rounded-full bg-[#FF5F56] hover:bg-[#FF5F56]/80 transition-colors shadow-sm" title="Close"></button>
+<button class="size-3.5 rounded-full bg-[#FFBD2E] hover:bg-[#FFBD2E]/80 transition-colors shadow-sm" title="Minimize"></button>
+<button class="size-3.5 rounded-full bg-[#27C93F] hover:bg-[#27C93F]/80 transition-colors shadow-sm" title="Maximize"></button>
+</div>
+</header>
+<div class="shrink-0 bg-background-dark/50 backdrop-blur-sm border-b border-white/5 px-8">
+<div class="flex gap-2 overflow-x-auto no-scrollbar py-3 items-center">
+<a class="px-5 py-2 rounded-full bg-primary text-white text-sm font-bold tracking-wide shadow-glow transition-all" href="#">
+                Keyboard
+            </a>
+<a class="px-5 py-2 rounded-full text-white/60 text-sm font-bold tracking-wide hover:bg-white/5 hover:text-white transition-all" href="#">
+                Lighting
+            </a>
+<a class="px-5 py-2 rounded-full text-white/60 text-sm font-bold tracking-wide hover:bg-white/5 hover:text-white transition-all" href="#">
+                Smart
+            </a>
+<a class="px-5 py-2 rounded-full text-white/60 text-sm font-bold tracking-wide hover:bg-white/5 hover:text-white transition-all" href="#">
+                Stats
+            </a>
+<a class="px-5 py-2 rounded-full text-white/60 text-sm font-bold tracking-wide hover:bg-white/5 hover:text-white transition-all" href="#">
+                Custom
+            </a>
+</div>
+</div>
+<main class="flex-1 overflow-y-auto p-8 flex flex-col items-center gap-8">
+<div class="w-full max-w-5xl">
+<div class="flex items-center justify-between mb-4 px-2">
+<div class="text-sm font-bold text-white/40 uppercase tracking-widest">Device View</div>
+<div class="flex items-center gap-2 text-xs text-primary font-medium bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+</span>
+                        Live Preview
+                    </div>
+</div>
+<div class="bg-surface-darker p-6 rounded-2xl border border-white/5 shadow-2xl relative overflow-hidden">
+<div class="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-24 bg-primary/5 blur-[80px] rounded-full pointer-events-none"></div>
+<div class="relative flex flex-col gap-2 select-none">
+<div class="flex justify-between gap-2">
+<button class="key-btn w-12 h-12 special">ESC</button>
+<div class="flex gap-2">
+<div class="w-4"></div> 
+<button class="key-btn w-12 h-12 special">F1</button>
+<button class="key-btn w-12 h-12 special">F2</button>
+<button class="key-btn w-12 h-12 special">F3</button>
+<button class="key-btn w-12 h-12 special">F4</button>
+<div class="w-2"></div>
+<button class="key-btn w-12 h-12 special">F5</button>
+<button class="key-btn w-12 h-12 special">F6</button>
+<button class="key-btn w-12 h-12 special">F7</button>
+<button class="key-btn w-12 h-12 special">F8</button>
+<div class="w-2"></div>
+<button class="key-btn w-12 h-12 special">F9</button>
+<button class="key-btn w-12 h-12 special">F10</button>
+<button class="key-btn w-12 h-12 special">F11</button>
+<button class="key-btn w-12 h-12 special">F12</button>
+</div>
+<div class="flex gap-2">
+<div class="w-4"></div>
+<button class="key-btn w-12 h-12 special">PRT</button>
+<button class="key-btn w-12 h-12 special">SCR</button>
+<button class="key-btn w-12 h-12 special">PAU</button>
+</div>
+</div>
+<div class="flex justify-between gap-2 mt-2">
+<div class="flex gap-1.5">
+<button class="key-btn w-12 h-12">`</button>
+<button class="key-btn w-12 h-12">1</button>
+<button class="key-btn w-12 h-12">2</button>
+<button class="key-btn w-12 h-12">3</button>
+<button class="key-btn w-12 h-12">4</button>
+<button class="key-btn w-12 h-12">5</button>
+<button class="key-btn w-12 h-12">6</button>
+<button class="key-btn w-12 h-12">7</button>
+<button class="key-btn w-12 h-12">8</button>
+<button class="key-btn w-12 h-12">9</button>
+<button class="key-btn w-12 h-12">0</button>
+<button class="key-btn w-12 h-12">-</button>
+<button class="key-btn w-12 h-12">=</button>
+<button class="key-btn w-[4.5rem] h-12 special">BKSP</button>
+</div>
+<div class="flex gap-2">
+<div class="w-4"></div>
+<button class="key-btn w-12 h-12 special">INS</button>
+<button class="key-btn w-12 h-12 special">HM</button>
+<button class="key-btn w-12 h-12 special">PU</button>
+</div>
+</div>
+<div class="flex justify-between gap-2">
+<div class="flex gap-1.5">
+<button class="key-btn w-[4.5rem] h-12 special text-left pl-3">TAB</button>
+<button class="key-btn w-12 h-12">Q</button>
+<button class="key-btn w-12 h-12">W</button>
+<button class="key-btn w-12 h-12">E</button>
+<button class="key-btn w-12 h-12">R</button>
+<button class="key-btn w-12 h-12">T</button>
+<button class="key-btn w-12 h-12">Y</button>
+<button class="key-btn w-12 h-12">U</button>
+<button class="key-btn w-12 h-12">I</button>
+<button class="key-btn w-12 h-12">O</button>
+<button class="key-btn w-12 h-12">P</button>
+<button class="key-btn w-12 h-12">[</button>
+<button class="key-btn w-12 h-12">]</button>
+<button class="key-btn w-[3.35rem] h-12">\</button>
+</div>
+<div class="flex gap-2">
+<div class="w-4"></div>
+<button class="key-btn w-12 h-12 special">DEL</button>
+<button class="key-btn w-12 h-12 special">END</button>
+<button class="key-btn w-12 h-12 special">PD</button>
+</div>
+</div>
+<div class="flex justify-between gap-2">
+<div class="flex gap-1.5">
+<button class="key-btn w-[5rem] h-12 special text-left pl-3">CAPS</button>
+<button class="key-btn w-12 h-12">A</button>
+<button class="key-btn w-12 h-12">S</button>
+<button class="key-btn w-12 h-12">D</button>
+<button class="key-btn w-12 h-12">F</button>
+<button class="key-btn w-12 h-12">G</button>
+<button class="key-btn w-12 h-12">H</button>
+<button class="key-btn w-12 h-12">J</button>
+<button class="key-btn w-12 h-12">K</button>
+<button class="key-btn w-12 h-12">L</button>
+<button class="key-btn w-12 h-12">;</button>
+<button class="key-btn w-12 h-12">'</button>
+<button class="key-btn w-[6rem] h-12 special">ENTER</button>
+</div>
+<div class="flex gap-2 w-[164px]">
+</div>
+</div>
+<div class="flex justify-between gap-2">
+<div class="flex gap-1.5">
+<button class="key-btn w-[6.5rem] h-12 special text-left pl-3">SHIFT</button>
+<button class="key-btn w-12 h-12">Z</button>
+<button class="key-btn w-12 h-12">X</button>
+<button class="key-btn w-12 h-12">C</button>
+<button class="key-btn w-12 h-12">V</button>
+<button class="key-btn w-12 h-12">B</button>
+<button class="key-btn w-12 h-12">N</button>
+<button class="key-btn w-12 h-12">M</button>
+<button class="key-btn w-12 h-12">,</button>
+<button class="key-btn w-12 h-12">.</button>
+<button class="key-btn w-12 h-12">/</button>
+<button class="key-btn w-[8rem] h-12 special">SHIFT</button>
+</div>
+<div class="flex gap-2">
+<div class="w-4"></div>
+<div class="w-12"></div> 
+<button class="key-btn w-12 h-12 flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">keyboard_arrow_up</span>
+</button>
+<div class="w-12"></div>
+</div>
+</div>
+<div class="flex justify-between gap-2">
+<div class="flex gap-1.5 flex-1">
+<button class="key-btn w-[4rem] h-12 special">CTRL</button>
+<button class="key-btn w-[4rem] h-12 special flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">grid_view</span>
+</button>
+<button class="key-btn w-[4rem] h-12 special">ALT</button>
+<button class="key-btn flex-1 h-12 active-key"></button> 
+<button class="key-btn w-[4rem] h-12 special">ALT</button>
+<button class="key-btn w-[4rem] h-12 special">FN</button>
+<button class="key-btn w-[4rem] h-12 special">MENU</button>
+<button class="key-btn w-[4rem] h-12 special">CTRL</button>
+</div>
+<div class="flex gap-2">
+<div class="w-4"></div>
+<button class="key-btn w-12 h-12 flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">keyboard_arrow_left</span>
+</button>
+<button class="key-btn w-12 h-12 flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">keyboard_arrow_down</span>
+</button>
+<button class="key-btn w-12 h-12 flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">keyboard_arrow_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="w-full max-w-5xl flex flex-col md:flex-row gap-6">
+<div class="w-full md:w-1/3 bg-surface-dark rounded-xl border border-white/5 p-6 flex flex-col justify-between shadow-lg">
+<div class="flex items-start justify-between">
+<div>
+<h3 class="text-white/60 text-sm font-bold uppercase tracking-wider mb-1">Total Actuations</h3>
+<div class="text-3xl font-bold text-white tracking-tight flex items-baseline gap-2">
+                                142,059
+                                <span class="text-xs font-normal text-emerald-400 bg-emerald-400/10 px-1.5 py-0.5 rounded flex items-center">
+<span class="material-symbols-outlined text-[12px] mr-1">trending_up</span> +12%
+                                </span>
+</div>
+</div>
+<div class="bg-primary/20 p-2 rounded-lg text-primary">
+<span class="material-symbols-outlined">bar_chart</span>
+</div>
+</div>
+<div class="mt-6 pt-6 border-t border-white/5">
+<div class="flex justify-between items-center mb-2">
+<span class="text-xs text-white/40 font-medium">Switch Health</span>
+<span class="text-xs text-white font-bold">98%</span>
+</div>
+<div class="w-full bg-white/5 rounded-full h-1.5">
+<div class="bg-gradient-to-r from-primary to-purple-400 h-1.5 rounded-full" style="width: 98%"></div>
+</div>
+</div>
+</div>
+<div class="w-full md:w-2/3 bg-surface-dark rounded-xl border border-white/5 p-6 shadow-lg flex flex-col">
+<div class="flex justify-between items-start mb-6">
+<div>
+<h2 class="text-2xl font-bold text-white tracking-tight">Configure: Spacebar</h2>
+<p class="text-white/40 text-sm mt-1">Assign a new function, macro, or shortcut to this key.</p>
+</div>
+<button class="text-white/40 hover:text-white transition-colors">
+<span class="material-symbols-outlined">restart_alt</span>
+</button>
+</div>
+<div class="flex-1 flex flex-col gap-6">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="space-y-2">
+<label class="text-xs font-bold text-white/60 uppercase tracking-wider">Mapping Type</label>
+<div class="relative group">
+<select class="w-full h-12 bg-background-dark border border-white/10 rounded-lg px-4 text-white appearance-none focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors cursor-pointer">
+<option>Default Function</option>
+<option>Keyboard Function</option>
+<option>Mouse Function</option>
+<option selected="">Macro</option>
+<option>Multimedia</option>
+<option>Windows Shortcut</option>
+<option>Launch Application</option>
+</select>
+<div class="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined">expand_more</span>
+</div>
+</div>
+</div>
+<div class="space-y-2">
+<label class="text-xs font-bold text-white/60 uppercase tracking-wider">Assigned Action</label>
+<div class="relative group">
+<select class="w-full h-12 bg-background-dark border border-white/10 rounded-lg px-4 text-white appearance-none focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors cursor-pointer">
+<option>None</option>
+<option selected="">Bunny Hop Macro (jump_spam)</option>
+<option>Type "GG WP"</option>
+<option>Mute Discord</option>
+</select>
+<div class="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined">expand_more</span>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-background-dark/50 rounded-lg p-3 border border-white/5 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded bg-primary/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-sm">terminal</span>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-bold text-white">Macro: jump_spam</span>
+<span class="text-xs text-white/40">Loop: While pressed • Delay: 15ms</span>
+</div>
+</div>
+<button class="text-xs font-bold text-primary hover:text-white hover:underline px-2">Edit Macro</button>
+</div>
+</div>
+<div class="mt-6 flex justify-end gap-3 pt-6 border-t border-white/5">
+<button class="px-6 h-10 rounded-lg border border-white/10 text-white font-bold text-sm hover:bg-white/5 transition-colors">
+                            Discard
+                        </button>
+<button class="px-6 h-10 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 hover:shadow-glow transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">save</span>
+                            Save &amp; Apply
+                        </button>
+</div>
+</div>
+</div>
+</main>
+<footer class="shrink-0 bg-[#150b18] border-t border-white/10 px-6 py-2 flex justify-between items-center text-xs font-medium text-white/40 select-none">
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2 text-white/60">
+<span class="material-symbols-outlined text-[16px] text-green-500">usb</span>
+                    Connected: USB-C
+                </div>
+<div class="flex items-center gap-2 hover:text-white transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-[16px]">laptop_windows</span>
+                    Mode: Windows
+                </div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">layers</span>
+                    Profile: Default
+                </div>
+</div>
+<div class="flex items-center gap-2">
+<div class="size-2 rounded-full bg-white/20"></div>
+                Last saved: Just now
+            </div>
+</footer>
+</div>
+</body></html>
