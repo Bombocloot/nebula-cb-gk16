@@ -34,6 +34,7 @@
     },
     "build": {
         "appId": "com.bombocloot.nebula",
+        "asar": true,
         "productName": "Nebula",
         "directories": {
             "output": "dist"
@@ -42,8 +43,7 @@
             "target": [
                 "nsis",
                 "portable"
-            ],
-            "icon": "src/assets/icon.ico"
+            ]
         },
         "nsis": {
             "oneClick": false,
@@ -55,7 +55,11 @@
             "src/**/*",
             "backend/**/*",
             "!backend/test-*.js",
-            "!backend/debug-*.js"
+            "!backend/debug-*.js",
+            "!backend/archive/**/*"
+        ],
+        "asarUnpack": [
+            "node_modules/node-hid/**/*"
         ]
     }
 }

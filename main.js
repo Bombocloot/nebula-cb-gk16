@@ -1,14 +1,31 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
-const { spawn } = require('child_process');
+const { spawn, fork } = require('child_process');
 
 let mainWindow;
 let bridge = null;
 
 function startBridge() {
-    bridge = spawn('node', [path.join(__dirname, 'backend', 'bridge.js')], {
-        stdio: ['pipe', 'pipe', 'pipe']
-    });
+    const isPackaged = app.isPackaged;
+
+    // In packaged app, bridge.js is inside app.asar
+    // We use spawn with Electron's execPath and ELECTRON_RUN_AS_NODE to run it as Node
+    const bridgePath = isPackaged
+        ? require('path').join(process.resourcesPath, 'app.asar', 'backend', 'bridge.js')
+        : path.join(__dirname, 'backend', 'bridge.js');
+
+    if (isPackaged) {
+        // Spawn using Electron binary with ELECTRON_RUN_AS_NODE flag
+        bridge = spawn(process.execPath, [bridgePath], {
+            stdio: ['pipe', 'pipe', 'pipe'],
+            env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' }
+        });
+    } else {
+        // In development, use regular node
+        bridge = spawn('node', [bridgePath], {
+            stdio: ['pipe', 'pipe', 'pipe']
+        });
+    }
 
     bridge.stdout.on('data', (data) => {
         const lines = data.toString().split('\n');

@@ -314,41 +314,59 @@ function topKeys(n) {
 }
 
 function startKeyMonitor() {
+    // PowerShell script to check key states via GetAsyncKeyState
+    // Detects simultaneous key presses and outputs changes as "KEYS:code1,code2..."
     const script = `
 Add-Type @"
 using System; using System.Runtime.InteropServices;
 public class K { [DllImport("user32.dll")] public static extern short GetAsyncKeyState(int v); }
 "@
 [Console]::OutputEncoding = [System.Text.Encoding]::ASCII
-$last = 0
-$lastTime = [DateTime]::Now
+$lastState = ""
 while($true) {
-    $anyPressed = $false
-    for($i = 8; $i -le 165; $i++) {
+    $pressed = @()
+    for($i = 8; $i -le 254; $i++) {
         if([K]::GetAsyncKeyState($i) -band 0x8000) {
-            $anyPressed = $true
-            if($i -ne $last) {
-                $last = $i
-                $lastTime = [DateTime]::Now
-                [Console]::WriteLine($i)
-                [Console]::Out.Flush()
-            }
-            break
+            $pressed += $i
         }
     }
-    if(-not $anyPressed) {
-        $elapsed = ([DateTime]::Now - $lastTime).TotalMilliseconds
-        if($elapsed -gt 200) { $last = 0 }
+    $currentState = $pressed -join ","
+    if($currentState -ne $lastState) {
+        $lastState = $currentState
+        [Console]::WriteLine("KEYS:" + $currentState)
+        [Console]::Out.Flush()
     }
-    Start-Sleep -Milliseconds 5
+    Start-Sleep -Milliseconds 10
 }`;
+
     const ps = spawn('powershell.exe', ['-Command', script], { stdio: ['ignore', 'pipe', 'ignore'] });
+
     ps.stdout.on('data', data => {
         data.toString().split('\n').forEach(line => {
-            const code = parseInt(line.trim());
-            if (!isNaN(code)) onKeyPress(code);
+            line = line.trim();
+            if (line.startsWith('KEYS:')) {
+                const keysStr = line.substring(5);
+                const keys = keysStr ? keysStr.split(',').map(Number) : [];
+                onKeyStateChange(keys);
+            }
         });
     });
+
+    // Cleanup on exit
+    process.on('exit', () => ps.kill());
+}
+
+let lastPressedKeys = [];
+
+function onKeyStateChange(currentKeys) {
+    // Detect new presses for stats
+    const newPresses = currentKeys.filter(k => !lastPressedKeys.includes(k));
+    newPresses.forEach(code => onKeyPress(code));
+
+    lastPressedKeys = currentKeys;
+
+    // Emit full key state for visualization
+    emit('full-stats', { keys: currentKeys });
 }
 
 // Per-Key Custom Mode Applier
