@@ -1,6 +1,6 @@
 {
     "name": "nebula-cb-gk16",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Open-source RGB Controller for Cosmic Byte CB-GK-16 Firefly Keyboard",
     "main": "main.js",
     "author": "Bombocloot",
@@ -43,7 +43,8 @@
             "target": [
                 "nsis",
                 "portable"
-            ]
+            ],
+            "requestedExecutionLevel": "requireAdministrator"
         },
         "nsis": {
             "oneClick": false,
