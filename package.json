@@ -28,7 +28,8 @@
         "build:dir": "electron-builder --win --dir"
     },
     "dependencies": {
-        "node-hid": "^3.1.0"
+        "node-hid": "^3.1.0",
+        "usb": "^2.17.0"
     },
     "devDependencies": {
         "@electron/rebuild": "^3.7.1",

@@ -1,5 +1,4 @@
-let HID;
-try { HID = require('node-hid'); } catch (_) { HID = { devices: () => [] }; }
+const { USBDevice } = require('./usb-device');
 
 const VID = 0x04D9;
 const PID = 0xA1CD;
@@ -47,9 +46,8 @@ for (const [key, idx] of Object.entries(KEY_MAP)) {
 class PerKeyRGBController {
     constructor() {
         this.device = null;
-        this.keyColors = {};  // {index: {r, g, b}}
+        this.keyColors = {};
 
-        // Initialize all keys to off
         for (let i = 0; i < 128; i++) {
             this.keyColors[i] = { r: 0, g: 0, b: 0 };
         }
@@ -57,19 +55,12 @@ class PerKeyRGBController {
 
     connect() {
         try {
-            const devices = HID.devices().filter(d =>
-                d.vendorId === VID &&
-                d.productId === PID &&
-                d.usagePage === 0xFF01
-            );
-
-            if (devices.length > 0) {
-                this.device = new HID.HID(devices[0].path);
-                this.device.on('error', () => { this.device = null; });
-                return true;
-            }
+            this.device = new USBDevice();
+            if (this.device.connect()) return true;
+            this.device = null;
         } catch (e) {
             console.error('Connect error:', e.message);
+            this.device = null;
         }
         return false;
     }
@@ -84,13 +75,10 @@ class PerKeyRGBController {
     sendCmd(data) {
         if (!this.device && !this.connect()) return false;
         try {
-            const report = [0, ...data.slice(0, 8)];
-            while (report.length < 9) report.push(0);
-            this.device.sendFeatureReport(report);
+            this.device.sendFeatureReport(data.slice(0, 8));
             return true;
         } catch (e) {
             console.error('sendCmd error:', e.message);
-            // Try to reconnect on next call
             this.device = null;
             return false;
         }
@@ -99,13 +87,10 @@ class PerKeyRGBController {
     sendData(data) {
         if (!this.device && !this.connect()) return false;
         try {
-            const report = [0, ...data.slice(0, 64)];
-            while (report.length < 65) report.push(0);
-            this.device.write(report);
+            this.device.write(data.slice(0, 64));
             return true;
         } catch (e) {
             console.error('sendData error:', e.message);
-            // Try to reconnect on next call
             this.device = null;
             return false;
         }
@@ -116,7 +101,6 @@ class PerKeyRGBController {
         return Math.round((value / 255) * 63);
     }
 
-    // Set a single key color (0-255 RGB)
     setKey(keyOrIndex, r, g, b) {
         const idx = typeof keyOrIndex === 'string' ? KEY_MAP[keyOrIndex.toUpperCase()] : keyOrIndex;
         if (idx !== undefined && idx >= 0 && idx < 128) {
@@ -124,7 +108,6 @@ class PerKeyRGBController {
         }
     }
 
-    // Set all keys to one color
     setAll(r, g, b) {
         const scaled = { r: this.scale(r), g: this.scale(g), b: this.scale(b) };
         for (let i = 0; i < 128; i++) {
@@ -132,26 +115,18 @@ class PerKeyRGBController {
         }
     }
 
-    // Clear all keys
     clearAll() {
         for (let i = 0; i < 128; i++) {
             this.keyColors[i] = { r: 0, g: 0, b: 0 };
         }
     }
 
-    // Apply horizontal gradient (left to right)
     applyGradient(startColor, endColor) {
-        // Row-based gradient (6 rows)
         const rows = [
-            [0, 15],   // Function row
-            [16, 31],  // Number row
-            [32, 47],  // QWERTY row
-            [48, 63],  // Home row
-            [64, 79],  // Shift row
-            [80, 95]   // Control row
+            [0, 15], [16, 31], [32, 47], [48, 63], [64, 79], [80, 95]
         ];
 
-        rows.forEach((rowRange, rowIdx) => {
+        rows.forEach((rowRange) => {
             for (let i = rowRange[0]; i <= rowRange[1]; i++) {
                 const t = (i - rowRange[0]) / (rowRange[1] - rowRange[0]);
                 this.keyColors[i] = {
@@ -163,7 +138,6 @@ class PerKeyRGBController {
         });
     }
 
-    // Apply rainbow gradient across keyboard
     applyRainbow() {
         for (let i = 0; i < 96; i++) {
             const hue = (i / 96) * 360;
@@ -176,7 +150,6 @@ class PerKeyRGBController {
         }
     }
 
-    // HSL to RGB conversion
     hslToRgb(h, s, l) {
         s /= 100;
         l /= 100;
@@ -188,13 +161,11 @@ class PerKeyRGBController {
         return { r: Math.round(f(0) * 255), g: Math.round(f(8) * 255), b: Math.round(f(4) * 255) };
     }
 
-    // Apply colors to keyboard using EEPROM write
     async apply() {
         if (!this.device && !this.connect()) {
             throw new Error('Cannot connect to keyboard');
         }
 
-        // Build channel arrays
         const flags = new Array(128).fill(0);
         const redChannel = new Array(128).fill(0);
         const greenChannel = new Array(128).fill(0);
@@ -203,7 +174,7 @@ class PerKeyRGBController {
         for (let i = 0; i < 128; i++) {
             const c = this.keyColors[i];
             if (c.r > 0 || c.g > 0 || c.b > 0) {
-                flags[i] = 0x10;  // Enable key
+                flags[i] = 0x10;
                 redChannel[i] = c.r;
                 greenChannel[i] = c.g;
                 blueChannel[i] = c.b;

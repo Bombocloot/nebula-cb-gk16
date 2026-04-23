@@ -2,6 +2,7 @@ const { EventEmitter } = require('events');
 const { spawn, execSync } = require('child_process');
 const fs = require('fs');
 const { PerKeyRGBController, KEY_MAP, INDEX_TO_KEY } = require('./perkey-rgb');
+const { USBDevice } = require('./usb-device');
 
 const VID = 0x04D9, PID = 0xA1CD;
 const P1_BIN = 'c:\\Program Files (x86)\\Cosmic Byte\\Firefly\\modules\\setting\\p1.bin';
@@ -75,7 +76,6 @@ const KEY_NEIGHBORS = {
 class KeyboardController extends EventEmitter {
     constructor() {
         super();
-        this.HID = null;
         this.device = null;
         this.perKey = new PerKeyRGBController();
         this.psProcess = null;
@@ -101,12 +101,6 @@ class KeyboardController extends EventEmitter {
     }
 
     start() {
-        try {
-            this.HID = require('node-hid');
-        } catch (e) {
-            console.error('[KB] node-hid not available:', e.message);
-            this.HID = { devices: () => [] };
-        }
         this.connect();
         this.startKeyMonitor();
         this.idleCheckInterval = setInterval(() => this.checkIdle(), 200);
@@ -123,12 +117,11 @@ class KeyboardController extends EventEmitter {
     connect() {
         if (this.device) return true;
         try {
-            const d = this.HID.devices().find(x => x.vendorId === VID && x.productId === PID && x.usagePage === 0xFF01);
-            if (d) {
-                this.device = new this.HID.HID(d.path);
-                this.device.on('error', () => { this.device = null; });
+            this.device = new USBDevice();
+            if (this.device.connect()) {
                 return true;
             }
+            this.device = null;
         } catch (_) {}
         return false;
     }
@@ -136,16 +129,20 @@ class KeyboardController extends EventEmitter {
     sendMode(mode, color, speed = 100, brightness = 100, direction = 0) {
         if (!this.device && !this.connect()) return;
         try {
-            const p = Array(65).fill(0);
-            p[0] = 0x03;
-            p[1] = 0x08;
-            p[2] = mode;
-            p[3] = Math.round((brightness / 100) * 63);
-            p[4] = Math.max(1, Math.round(6 - (speed / 100) * 5));
-            p[5] = direction;
-            p[6] = color;
-            this.device.sendFeatureReport(p);
-        } catch (_) { this.device = null; }
+            const cmd = [
+                0x08,
+                mode,
+                Math.round((brightness / 100) * 63),
+                Math.max(1, Math.round(6 - (speed / 100) * 5)),
+                direction,
+                color,
+                0x00,
+                0x00
+            ];
+            this.device.sendFeatureReport(cmd);
+        } catch (_) {
+            this.device = null;
+        }
     }
 
     kpm() {

@@ -20,10 +20,36 @@
 
 ## 🔧 Installation
 
+### Prerequisites: Install libusbK Driver
+
+Nebula uses the `usb` library to communicate with your keyboard, which requires the **libusbK** driver on Interface 2 (MI_02). The default Windows HID driver will not work.
+
+**Step-by-step driver install using Zadig:**
+
+1. **Download Zadig** from [zadig.akeo.ie](https://zadig.akeo.ie/) and run it (no install needed, it's portable)
+
+2. **Plug in your CB-GK-16 Firefly keyboard**
+
+3. In Zadig, go to **Options → List All Devices**
+
+4. From the dropdown, find **"HID-compliant vendor-defined device"** — there will be multiple entries. You need the one that corresponds to **Interface 2 (MI_02)**:
+   - Click through each entry; look at the USB ID at the bottom — it should show `04D9 A1CD` and **`MI_02`** in the device path
+
+5. With the correct MI_02 interface selected:
+   - Set the **Target Driver** (right box) to **libusbK (v3.1.0.0)** using the arrows
+   - Click **Replace Driver**
+   - Wait for the install to complete (~10–30 seconds)
+
+6. You're done. Nebula will now be able to control your keyboard's RGB lighting.
+
+> **Note:** If you ever want to revert (e.g., to use the official Firefly software), re-open Zadig, select the same device, choose **WinUSB** or **HidUsb**, and click Replace Driver.
+
+---
+
 ### From Release
 1. Download the latest `.exe` from [Releases](../../releases)
-2. Run the installer
-3. Launch Nebula from Start Menu
+2. Run as Administrator (required for USB access)
+3. Launch Nebula
 
 ### From Source
 ```bash
@@ -80,7 +106,7 @@ RGB Encoding: Planar (separate R, G, B arrays), 6-bit per channel (0-63)
 ## 🛠️ Tech Stack
 
 - **Electron** - Cross-platform desktop framework
-- **node-hid** - USB HID communication
+- **usb** - USB communication via libusbK (node-usb)
 - **PowerShell** - Key monitoring (Windows)
 
 ## 📝 License
