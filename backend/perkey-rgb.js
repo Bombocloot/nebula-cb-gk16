@@ -1,4 +1,5 @@
-let HID; try { HID = require('node-hid'); } catch (e) { HID = { devices: () => [] }; }
+let HID;
+try { HID = require('node-hid'); } catch (_) { HID = { devices: () => [] }; }
 
 const VID = 0x04D9;
 const PID = 0xA1CD;
