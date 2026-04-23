@@ -1,4 +1,4 @@
-const HID = require('node-hid');
+let HID; try { HID = require('node-hid'); } catch (e) { HID = { devices: () => [] }; }
 const { spawn, execSync } = require('child_process');
 const readline = require('readline');
 const fs = require('fs');
@@ -58,7 +58,7 @@ const VK_TO_KEYNAME = {
     91: 'LWIN', 93: 'MENU',
     112: 'F1', 113: 'F2', 114: 'F3', 115: 'F4', 116: 'F5', 117: 'F6',
     118: 'F7', 119: 'F8', 120: 'F9', 121: 'F10', 122: 'F11', 123: 'F12',
-    160: 'LSHIFT', 161: 'RSHIFT', 162: 'LCTRL', 163: 'RCTRL', 164: 'LALT', 165: 'RALT',
+    160: 'LSHIFT', 161: 'RSHIFT', 162: 'LCTRL', 163: 'RCtrl', 164: 'LALT', 165: 'RALT',
     186: 'SEMICOLON', 187: 'EQUAL', 188: 'COMMA', 189: 'MINUS', 190: 'PERIOD',
     191: 'SLASH', 192: 'GRAVE', 219: 'LBRACKET', 220: 'BACKSLASH', 221: 'RBRACKET', 222: 'QUOTE',
     144: 'SCRLK', 145: 'PAUSE', 44: 'PRTSC'
@@ -190,7 +190,7 @@ function onReactiveKeyPress(vkCode) {
     }
 }
 
-const rl = readline.createInterface({ input: process.stdin });
+let rl;
 const emit = (type, data) => console.log(JSON.stringify({ type, ...data }));
 
 const KEY_NAMES = {
@@ -490,136 +490,146 @@ function nativeApplyCustom(args) {
     applyCustom(args);
 }
 
-rl.on('line', line => {
-    try {
-        const cmd = JSON.parse(line);
-        if (cmd.action === 'set-mode') {
-            smartEnabled = false;
-            send(cmd.mode, cmd.color, cmd.speed || 100, cmd.brightness || 100, cmd.direction || 0);
-            emit('status', { msg: `Mode ${cmd.mode}` });
-        }
-        else if (cmd.action === 'toggle-smart') {
-            smartEnabled = cmd.active;
-            console.error(`[BRIDGE] Smart mode: ${smartEnabled ? 'ENABLED' : 'DISABLED'} (activeColor=${activeColor}, idleColor=${idleColor})`);
-            if (smartEnabled) {
-                isIdle = false;
-                lastKeyTime = Date.now();
-                send(9, activeColor);
-                emit('status', { msg: 'SMART ON' });
-            } else {
-                emit('status', { msg: 'SMART OFF' });
+if (require.main === module) {
+    rl = readline.createInterface({ input: process.stdin });
+    rl.on('line', line => {
+        try {
+            const cmd = JSON.parse(line);
+            if (cmd.action === 'set-mode') {
+                smartEnabled = false;
+                send(cmd.mode, cmd.color, cmd.speed || 100, cmd.brightness || 100, cmd.direction || 0);
+                emit('status', { msg: `Mode ${cmd.mode}` });
             }
-        }
-        else if (cmd.action === 'settings') {
-            console.error(`[BRIDGE] Settings received:`, JSON.stringify(cmd));
-            if (cmd.idleTimeout !== undefined) idleTimeout = cmd.idleTimeout;
-            if (cmd.activeColor !== undefined) activeColor = cmd.activeColor;
-            if (cmd.idleColor !== undefined) idleColor = cmd.idleColor;
-            console.error(`[BRIDGE] Settings applied: timeout=${idleTimeout}ms, active=${activeColor}, idle=${idleColor}`);
-            emit('status', { msg: `CFG: ${idleTimeout / 1000}s` });
-        }
-        else if (cmd.action === 'apply-custom') {
-            nativeApplyCustom(cmd);
-        }
-        else if (cmd.action === 'get-stats') emit('full-stats', { total: stats.total, session: Math.round((Date.now() - stats.start) / 1000), top: topKeys(10) });
-        else if (cmd.action === 'reset-stats') { stats = { keys: {}, total: 0, start: Date.now() }; recentKeys = []; }
-        else if (cmd.action === 'set-gaming-zone') {
-            // Native gaming zone control (ESC, WASD, arrows - 9 keys)
-            // Requires WinUSB driver on MI_02
-            if (gamingZone) {
-                gamingZone.setGamingZoneColor(cmd.color || { r: 255, g: 255, b: 255 })
-                    .then(() => emit('status', { msg: 'Gaming Zone set' }))
-                    .catch(e => emit('status', { msg: 'Gaming Zone error' }));
-            } else {
-                emit('status', { msg: 'Gaming Zone not available' });
+            else if (cmd.action === 'toggle-smart') {
+                smartEnabled = cmd.active;
+                console.error(`[BRIDGE] Smart mode: ${smartEnabled ? 'ENABLED' : 'DISABLED'} (activeColor=${activeColor}, idleColor=${idleColor})`);
+                if (smartEnabled) {
+                    isIdle = false;
+                    lastKeyTime = Date.now();
+                    send(9, activeColor);
+                    emit('status', { msg: 'SMART ON' });
+                } else {
+                    emit('status', { msg: 'SMART OFF' });
+                }
             }
-        }
-        // === PER-KEY RGB COMMANDS ===
-        else if (cmd.action === 'perkey-all') {
-            // Set all keys to one color
-            const r = cmd.r !== undefined ? cmd.r : 255;
-            const g = cmd.g !== undefined ? cmd.g : 255;
-            const b = cmd.b !== undefined ? cmd.b : 255;
-            perKeyController.setAll(r, g, b);
+            else if (cmd.action === 'settings') {
+                console.error(`[BRIDGE] Settings received:`, JSON.stringify(cmd));
+                if (cmd.idleTimeout !== undefined) idleTimeout = cmd.idleTimeout;
+                if (cmd.activeColor !== undefined) activeColor = cmd.activeColor;
+                if (cmd.idleColor !== undefined) idleColor = cmd.idleColor;
+                console.error(`[BRIDGE] Settings applied: timeout=${idleTimeout}ms, active=${activeColor}, idle=${idleColor}`);
+                emit('status', { msg: `CFG: ${idleTimeout / 1000}s` });
+            }
+            else if (cmd.action === 'apply-custom') {
+                nativeApplyCustom(cmd);
+            }
+            else if (cmd.action === 'get-stats') emit('full-stats', { total: stats.total, session: Math.round((Date.now() - stats.start) / 1000), top: topKeys(10) });
+            else if (cmd.action === 'reset-stats') { stats = { keys: {}, total: 0, start: Date.now() }; recentKeys = []; }
+            else if (cmd.action === 'set-gaming-zone') {
+                // Native gaming zone control (ESC, WASD, arrows - 9 keys)
+                // Requires WinUSB driver on MI_02
+                if (gamingZone) {
+                    gamingZone.setGamingZoneColor(cmd.color || { r: 255, g: 255, b: 255 })
+                        .then(() => emit('status', { msg: 'Gaming Zone set' }))
+                        .catch(e => emit('status', { msg: 'Gaming Zone error' }));
+                } else {
+                    emit('status', { msg: 'Gaming Zone not available' });
+                }
+            }
+            // === PER-KEY RGB COMMANDS ===
+            else if (cmd.action === 'perkey-all') {
+                // Set all keys to one color
+                const r = cmd.r !== undefined ? cmd.r : 255;
+                const g = cmd.g !== undefined ? cmd.g : 255;
+                const b = cmd.b !== undefined ? cmd.b : 255;
+                perKeyController.setAll(r, g, b);
 
-            // Only apply immediately if not clearing (r=g=b=0 is used to clear state before painting)
-            if (r > 0 || g > 0 || b > 0) {
+                // Only apply immediately if not clearing (r=g=b=0 is used to clear state before painting)
+                if (r > 0 || g > 0 || b > 0) {
+                    perKeyController.apply()
+                        .then(() => emit('status', { msg: 'Per-Key: All set' }))
+                        .catch(e => emit('status', { msg: 'Per-Key error: ' + e.message }));
+                } else {
+                    emit('status', { msg: 'Per-Key: State cleared' });
+                }
+            }
+            else if (cmd.action === 'perkey-key') {
+                // Set a single key: {action: 'perkey-key', key: 'W', r, g, b}
+                const r = cmd.r !== undefined ? cmd.r : 255;
+                const g = cmd.g !== undefined ? cmd.g : 255;
+                const b = cmd.b !== undefined ? cmd.b : 255;
+                perKeyController.setKey(cmd.key, r, g, b);
+                emit('status', { msg: `Key ${cmd.key} set` });
+            }
+            else if (cmd.action === 'perkey-apply') {
+                // Apply current per-key config to keyboard
                 perKeyController.apply()
-                    .then(() => emit('status', { msg: 'Per-Key: All set' }))
+                    .then(() => emit('status', { msg: 'Per-Key: Applied' }))
                     .catch(e => emit('status', { msg: 'Per-Key error: ' + e.message }));
-            } else {
-                emit('status', { msg: 'Per-Key: State cleared' });
             }
-        }
-        else if (cmd.action === 'perkey-key') {
-            // Set a single key: {action: 'perkey-key', key: 'W', r, g, b}
-            const r = cmd.r !== undefined ? cmd.r : 255;
-            const g = cmd.g !== undefined ? cmd.g : 255;
-            const b = cmd.b !== undefined ? cmd.b : 255;
-            perKeyController.setKey(cmd.key, r, g, b);
-            emit('status', { msg: `Key ${cmd.key} set` });
-        }
-        else if (cmd.action === 'perkey-apply') {
-            // Apply current per-key config to keyboard
-            perKeyController.apply()
-                .then(() => emit('status', { msg: 'Per-Key: Applied' }))
-                .catch(e => emit('status', { msg: 'Per-Key error: ' + e.message }));
-        }
-        else if (cmd.action === 'perkey-gradient') {
-            // Apply gradient: {action: 'perkey-gradient', start: {r,g,b}, end: {r,g,b}}
-            perKeyController.applyGradient(
-                cmd.start || { r: 255, g: 0, b: 0 },
-                cmd.end || { r: 0, g: 0, b: 255 }
-            );
-            perKeyController.apply()
-                .then(() => emit('status', { msg: 'Per-Key: Gradient applied' }))
-                .catch(e => emit('status', { msg: 'Per-Key error: ' + e.message }));
-        }
-        else if (cmd.action === 'perkey-rainbow') {
-            // Apply rainbow gradient across keyboard
-            perKeyController.applyRainbow();
-            perKeyController.apply()
-                .then(() => emit('status', { msg: 'Per-Key: Rainbow applied' }))
-                .catch(e => emit('status', { msg: 'Per-Key error: ' + e.message }));
-        }
-        else if (cmd.action === 'perkey-clear') {
-            // Turn off all keys
-            perKeyController.clearAll();
-            perKeyController.apply()
-                .then(() => emit('status', { msg: 'Per-Key: Cleared' }))
-                .catch(e => emit('status', { msg: 'Per-Key error: ' + e.message }));
-        }
-        else if (cmd.action === 'get-keymap') {
-            // Send key map to frontend for per-key UI
-            emit('keymap', { map: KEY_MAP, reverse: INDEX_TO_KEY });
-        }
-        else if (cmd.action === 'toggle-reactive') {
-            // Toggle reactive lighting mode: {action: 'toggle-reactive', active: true/false, color: {r,g,b}}
-            reactiveEnabled = cmd.active;
-            if (cmd.color) {
-                reactiveColor = cmd.color;
+            else if (cmd.action === 'perkey-gradient') {
+                // Apply gradient: {action: 'perkey-gradient', start: {r,g,b}, end: {r,g,b}}
+                perKeyController.applyGradient(
+                    cmd.start || { r: 255, g: 0, b: 0 },
+                    cmd.end || { r: 0, g: 0, b: 255 }
+                );
+                perKeyController.apply()
+                    .then(() => emit('status', { msg: 'Per-Key: Gradient applied' }))
+                    .catch(e => emit('status', { msg: 'Per-Key error: ' + e.message }));
             }
-            if (reactiveEnabled) {
-                startReactiveMode();
-                emit('status', { msg: 'Reactive: ON' });
-            } else {
-                stopReactiveMode();
+            else if (cmd.action === 'perkey-rainbow') {
+                // Apply rainbow gradient across keyboard
+                perKeyController.applyRainbow();
+                perKeyController.apply()
+                    .then(() => emit('status', { msg: 'Per-Key: Rainbow applied' }))
+                    .catch(e => emit('status', { msg: 'Per-Key error: ' + e.message }));
+            }
+            else if (cmd.action === 'perkey-clear') {
+                // Turn off all keys
                 perKeyController.clearAll();
-                perKeyController.apply().catch(() => { });
-                emit('status', { msg: 'Reactive: OFF' });
+                perKeyController.apply()
+                    .then(() => emit('status', { msg: 'Per-Key: Cleared' }))
+                    .catch(e => emit('status', { msg: 'Per-Key error: ' + e.message }));
             }
-        }
-        else if (cmd.action === 'toggle-neighbor-flash') {
-            // Toggle neighbor flash on idle->active transition: {action: 'toggle-neighbor-flash', active: true/false}
-            neighborFlashEnabled = cmd.active;
-            emit('status', { msg: 'Neighbor Flash: ' + (neighborFlashEnabled ? 'ON' : 'OFF') });
-            console.error('[BRIDGE] Neighbor flash ' + (neighborFlashEnabled ? 'ENABLED' : 'DISABLED'));
-        }
-    } catch (e) { }
-});
+            else if (cmd.action === 'get-keymap') {
+                // Send key map to frontend for per-key UI
+                emit('keymap', { map: KEY_MAP, reverse: INDEX_TO_KEY });
+            }
+            else if (cmd.action === 'toggle-reactive') {
+                // Toggle reactive lighting mode: {action: 'toggle-reactive', active: true/false, color: {r,g,b}}
+                reactiveEnabled = cmd.active;
+                if (cmd.color) {
+                    reactiveColor = cmd.color;
+                }
+                if (reactiveEnabled) {
+                    startReactiveMode();
+                    emit('status', { msg: 'Reactive: ON' });
+                } else {
+                    stopReactiveMode();
+                    perKeyController.clearAll();
+                    perKeyController.apply().catch(() => { });
+                    emit('status', { msg: 'Reactive: OFF' });
+                }
+            }
+            else if (cmd.action === 'toggle-neighbor-flash') {
+                // Toggle neighbor flash on idle->active transition: {action: 'toggle-neighbor-flash', active: true/false}
+                neighborFlashEnabled = cmd.active;
+                emit('status', { msg: 'Neighbor Flash: ' + (neighborFlashEnabled ? 'ON' : 'OFF') });
+                console.error('[BRIDGE] Neighbor flash ' + (neighborFlashEnabled ? 'ENABLED' : 'DISABLED'));
+            }
+        } catch (e) { }
+    });
 
-setInterval(checkIdle, 200);
-connect();
-startKeyMonitor();
-console.error('[BRIDGE] v19 Ready - Per-Key RGB');
-emit('status', { msg: 'Ready' });
+    setInterval(checkIdle, 200);
+    connect();
+    startKeyMonitor();
+    console.error('[BRIDGE] v19 Ready - Per-Key RGB');
+    emit('status', { msg: 'Ready' });
+}
+
+module.exports = {
+    topKeys,
+    stats,
+    keyName,
+    KEY_NAMES
+};
