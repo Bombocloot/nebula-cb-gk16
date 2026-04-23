@@ -1,8 +1,4 @@
-// Per-Key RGB Controller with Planar Encoding
-// Supports ANY RGB color, gradients, and custom colors
-// Protocol: Apply0=flags, Apply1=R, Apply2=G, Apply3=B
-
-const HID = require('node-hid');
+let HID; try { HID = require('node-hid'); } catch (e) { HID = { devices: () => [] }; }
 
 const VID = 0x04D9;
 const PID = 0xA1CD;
