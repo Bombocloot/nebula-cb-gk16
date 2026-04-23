@@ -878,7 +878,21 @@
             window.api.onStats(d => {
                 document.getElementById('totalKeys').textContent = d.total?.toLocaleString() || '0';
                 document.getElementById('kpmVal').textContent = d.kpm || '0';
-                if (d.top) document.getElementById('topKeys').innerHTML = d.top.map((k, i) => `<div style="display:flex;justify-content:space-between;padding:4px;background:rgba(255,255,255,0.03);border-radius:2px;margin-bottom:2px;font-size:8px;"><span>${i + 1}. ${k.name}</span><span>${k.count}</span></div>`).join('');
+                if (d.top) {
+                    const topKeysEl = document.getElementById('topKeys');
+                    topKeysEl.textContent = '';
+                    d.top.forEach((k, i) => {
+                        const row = document.createElement('div');
+                        row.style.cssText = 'display:flex;justify-content:space-between;padding:4px;background:rgba(255,255,255,0.03);border-radius:2px;margin-bottom:2px;font-size:8px;';
+                        const nameSpan = document.createElement('span');
+                        nameSpan.textContent = `${i + 1}. ${k.name}`;
+                        const countSpan = document.createElement('span');
+                        countSpan.textContent = k.count;
+                        row.appendChild(nameSpan);
+                        row.appendChild(countSpan);
+                        topKeysEl.appendChild(row);
+                    });
+                }
             });
             window.api.onFullStats(d => updateVis(d.keys || []));
             window.api.getStats();
