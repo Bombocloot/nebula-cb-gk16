@@ -230,13 +230,15 @@ class PerKeyRGBController {
         this.sendCmd([0x08, 0x33, 0x3f, 0x04, 0x00, 0x00, 0xC4, 0x3B]);
         await this.delay(20);
 
-        // FINALIZE
+        // FINALIZE — 0x0C drives top 4 rows, 0x0D drives bottom 2 rows.
+        // Must pass actual flag data (not zeros) so rows stay lit.
+        // We send flags here; the 0x12 channel writes already hold R/G/B.
         for (const cmd of [0x0C, 0x0D]) {
             this.sendCmd([cmd, 0x00, 0x00, 0x00, 0x00, 0x55, 0xAA, 0x00]);
             await this.delay(20);
-            this.sendData(new Array(64).fill(0));
+            this.sendData(flags.slice(0, 64));
             await this.delay(30);
-            this.sendData(new Array(64).fill(0));
+            this.sendData(flags.slice(64));
             await this.delay(30);
         }
 

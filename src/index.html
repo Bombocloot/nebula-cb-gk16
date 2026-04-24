@@ -25,7 +25,16 @@
             --accent: #fff;
         }
 
-        body {
+        /* html + body must be transparent so the native window shows through
+           during animations — the actual dark bg lives on #app-shell */
+        html, body {
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            overflow: hidden;
+        }
+
+        #app-shell {
             font-family: 'Inter', sans-serif;
             background: var(--bg);
             color: var(--text);
@@ -33,6 +42,8 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            /* Needed so transform-origin works relative to the shell, not the page */
+            transform-origin: top left;
         }
 
         .titlebar {
@@ -495,10 +506,90 @@
             background: var(--border);
             border-radius: 2px;
         }
+
+        /* ── Window animations ──────────────────────────────────── */
+
+        /* Minimize: genie shrink toward bottom-center (taskbar) */
+        @keyframes anim-minimize {
+            0% {
+                transform: scale(1) translateY(0);
+                transform-origin: center bottom;
+                opacity: 1;
+            }
+            60% {
+                transform: scale(0.6) translateY(20vh);
+                transform-origin: center bottom;
+                opacity: 0.6;
+            }
+            100% {
+                transform: scale(0.05) translateY(60vh);
+                transform-origin: center bottom;
+                opacity: 0;
+            }
+        }
+
+        /* Close: collapse toward the close button (top-left, ~15px,15px) */
+        @keyframes anim-close {
+            0% {
+                transform: scale(1);
+                transform-origin: 15px 15px;
+                opacity: 1;
+                filter: blur(0px);
+            }
+            50% {
+                transform: scale(0.5);
+                transform-origin: 15px 15px;
+                opacity: 0.5;
+                filter: blur(1px);
+            }
+            100% {
+                transform: scale(0);
+                transform-origin: 15px 15px;
+                opacity: 0;
+                filter: blur(4px);
+            }
+        }
+
+        /* Open: expand from top-left (reverse of close) */
+        @keyframes anim-open {
+            0% {
+                transform: scale(0);
+                transform-origin: 15px 15px;
+                opacity: 0;
+                filter: blur(4px);
+            }
+            60% {
+                transform: scale(1.03);
+                transform-origin: 15px 15px;
+                opacity: 0.9;
+                filter: blur(0px);
+            }
+            100% {
+                transform: scale(1);
+                transform-origin: 15px 15px;
+                opacity: 1;
+                filter: blur(0px);
+            }
+        }
+
+        #app-shell.is-minimizing {
+            animation: anim-minimize 300ms cubic-bezier(0.4, 0, 0.8, 0.2) forwards;
+            pointer-events: none;
+        }
+
+        #app-shell.is-closing {
+            animation: anim-close 250ms cubic-bezier(0.4, 0, 1, 1) forwards;
+            pointer-events: none;
+        }
+
+        #app-shell.is-opening {
+            animation: anim-open 350ms cubic-bezier(0.2, 0, 0.2, 1) forwards;
+        }
     </style>
 </head>
 
 <body>
+<div id="app-shell">
     <div class="titlebar">
         <div class="window-controls">
             <button class="window-btn btn-close" id="btnClose"></button>
@@ -737,8 +828,36 @@
             document.getElementById('page-' + curPage).classList.add('active');
         });
 
-        document.getElementById('btnClose').onclick = () => window.api?.windowControl('close');
-        document.getElementById('btnMinimize').onclick = () => window.api?.windowControl('minimize');
+        // ── Animated window controls ────────────────────────────────────
+        const shell = document.getElementById('app-shell');
+        let _animating = false;
+
+        function triggerWindowAnim(animClass, action) {
+            if (_animating) return;
+            _animating = true;
+            shell.classList.add(animClass);
+            shell.addEventListener('animationend', function handler() {
+                shell.removeEventListener('animationend', handler);
+                window.api?.windowAnimateDone(action);
+            });
+        }
+
+        document.getElementById('btnClose').onclick = () => triggerWindowAnim('is-closing', 'close');
+        document.getElementById('btnMinimize').onclick = () => triggerWindowAnim('is-minimizing', 'minimize');
+
+        // Reset animation state when window is restored from taskbar
+        window.api?.onWindowRestore(() => {
+            _animating = false;
+            shell.classList.remove('is-minimizing', 'is-closing', 'is-opening');
+            // Trigger open animation on restore
+            requestAnimationFrame(() => {
+                shell.classList.add('is-opening');
+                shell.addEventListener('animationend', function handler() {
+                    shell.removeEventListener('animationend', handler);
+                    shell.classList.remove('is-opening');
+                });
+            });
+        });
 
         // Lighting
         function initLight() {
@@ -904,6 +1023,7 @@
         initPerkey();
         initVis();
     </script>
+</div><!-- #app-shell -->
 </body>
 
 </html>
