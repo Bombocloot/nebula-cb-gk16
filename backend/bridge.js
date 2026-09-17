@@ -25,6 +25,11 @@ const VID = 0x04D9, PID = 0xA1CD;
 const P1_BIN = 'c:\\Program Files (x86)\\Cosmic Byte\\Firefly\\modules\\setting\\p1.bin';
 const FIREFLY_EXE = 'c:\\Program Files (x86)\\Cosmic Byte\\Firefly\\FIREFLY.exe';
 
+const sysRoot = process.env.SystemRoot || 'C:\\Windows';
+const POWERSHELL_PATH = `${sysRoot}\\System32\\WindowsPowerShell\\v1.0\\powershell.exe`;
+const TASKKILL_PATH = `"${sysRoot}\\System32\\taskkill.exe"`;
+const EMPTY_LINE = Array(512).fill(0).join(', ');
+
 let device = null;
 let smartEnabled = false;
 let lastKeyTime = Date.now();
@@ -339,7 +344,7 @@ while($true) {
     Start-Sleep -Milliseconds 10
 }`;
 
-    const ps = spawn('powershell.exe', ['-Command', script], { stdio: ['ignore', 'pipe', 'ignore'] });
+    const ps = spawn(POWERSHELL_PATH, ['-Command', script], { stdio: ['ignore', 'pipe', 'ignore'] });
 
     ps.stdout.on('data', data => {
         data.toString().split('\n').forEach(line => {
@@ -395,14 +400,12 @@ function applyCustom(args) {
 
             // Build the [userPicture] lines (5 lines for 5 profiles, we only set line 0)
             const line0 = keyData.join(', ');
-            const emptyLine = Array(512).fill(0).join(', ');
-
             const newUserPicture = `[userPicture]
 0=${line0}
-1=${emptyLine}
-2=${emptyLine}
-3=${emptyLine}
-4=${emptyLine}
+1=${EMPTY_LINE}
+2=${EMPTY_LINE}
+3=${EMPTY_LINE}
+4=${EMPTY_LINE}
 `;
 
             // Update [color] section to use Custom Mode (51)
@@ -423,7 +426,7 @@ function applyCustom(args) {
         // Sync via FIREFLY.exe
         // IMPORTANT: Must set CWD so it finds modules/setting/p1.bin
         const fireflyDir = 'c:\\Program Files (x86)\\Cosmic Byte\\Firefly';
-        try { execSync('taskkill /F /IM FIREFLY.exe', { stdio: 'ignore' }); } catch (e) { }
+        try { execSync(`${TASKKILL_PATH} /F /IM FIREFLY.exe`, { stdio: 'ignore' }); } catch (e) { }
 
         const writeTime = Date.now() - startTime;
         console.error(`[BRIDGE] p1.bin write time: ${writeTime}ms`);
@@ -441,7 +444,7 @@ function applyCustom(args) {
         const syncDelay = args && args.fast ? 1000 : 1500;
 
         setTimeout(() => {
-            try { execSync('taskkill /F /IM FIREFLY.exe', { stdio: 'ignore' }); } catch (e) { }
+            try { execSync(`${TASKKILL_PATH} /F /IM FIREFLY.exe`, { stdio: 'ignore' }); } catch (e) { }
             const totalTime = Date.now() - startTime;
             console.error(`[BRIDGE] Sync complete. Total time: ${totalTime}ms`);
             connect();
