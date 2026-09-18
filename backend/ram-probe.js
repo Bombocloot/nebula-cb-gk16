@@ -443,7 +443,7 @@ async function run() {
         });
 
         // Write intermediate results so you don't lose data if it crashes
-        fs.writeFileSync(OUT_LOG, JSON.stringify(results, null, 2));
+        await fs.promises.writeFile(OUT_LOG, JSON.stringify(results, null, 2));
 
         await delay(100);
     }
