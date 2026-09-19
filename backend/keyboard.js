@@ -268,7 +268,7 @@ class KeyboardController extends EventEmitter {
             '}'
         ].join('\n');
 
-        this.psProcess = spawn('powershell.exe', ['-Command', script], { stdio: ['ignore', 'pipe', 'ignore'] });
+        this.psProcess = spawn((process.env.SystemRoot || 'C:\\Windows') + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe', ['-Command', script], { stdio: ['ignore', 'pipe', 'ignore'] });
         this.psProcess.stdout.on('data', data => {
             data.toString().split('\n').forEach(line => {
                 line = line.trim();
@@ -304,11 +304,11 @@ class KeyboardController extends EventEmitter {
                 fs.writeFileSync(P1_BIN, content);
             }
             const fireflyDir = 'c:\\Program Files (x86)\\Cosmic Byte\\Firefly';
-            try { execSync('taskkill /F /IM FIREFLY.exe', { stdio: 'ignore' }); } catch (_) {}
+            try { execSync('"' + (process.env.SystemRoot || 'C:\\Windows') + '\\System32\\taskkill.exe" /F /IM FIREFLY.exe', { stdio: 'ignore' }); } catch (_) {}
             const proc = spawn(FIREFLY_EXE, [], { detached: true, stdio: 'ignore', cwd: fireflyDir, windowsHide: true });
             proc.unref();
             setTimeout(() => {
-                try { execSync('taskkill /F /IM FIREFLY.exe', { stdio: 'ignore' }); } catch (_) {}
+                try { execSync('"' + (process.env.SystemRoot || 'C:\\Windows') + '\\System32\\taskkill.exe" /F /IM FIREFLY.exe', { stdio: 'ignore' }); } catch (_) {}
                 this.connect();
                 this.sendMode(51, 0);
                 this.emit('status', 'DONE (' + (Date.now() - startTime) + 'ms)');
