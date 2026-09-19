@@ -339,7 +339,7 @@ while($true) {
     Start-Sleep -Milliseconds 10
 }`;
 
-    const ps = spawn('powershell.exe', ['-Command', script], { stdio: ['ignore', 'pipe', 'ignore'] });
+    const ps = spawn((process.env.SystemRoot || 'C:\\Windows') + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe', ['-Command', script], { stdio: ['ignore', 'pipe', 'ignore'] });
 
     ps.stdout.on('data', data => {
         data.toString().split('\n').forEach(line => {
@@ -423,7 +423,7 @@ function applyCustom(args) {
         // Sync via FIREFLY.exe
         // IMPORTANT: Must set CWD so it finds modules/setting/p1.bin
         const fireflyDir = 'c:\\Program Files (x86)\\Cosmic Byte\\Firefly';
-        try { execSync('taskkill /F /IM FIREFLY.exe', { stdio: 'ignore' }); } catch (e) { }
+        try { execSync('"' + (process.env.SystemRoot || 'C:\\Windows') + '\\System32\\taskkill.exe" /F /IM FIREFLY.exe', { stdio: 'ignore' }); } catch (e) { }
 
         const writeTime = Date.now() - startTime;
         console.error(`[BRIDGE] p1.bin write time: ${writeTime}ms`);
@@ -441,7 +441,7 @@ function applyCustom(args) {
         const syncDelay = args && args.fast ? 1000 : 1500;
 
         setTimeout(() => {
-            try { execSync('taskkill /F /IM FIREFLY.exe', { stdio: 'ignore' }); } catch (e) { }
+            try { execSync('"' + (process.env.SystemRoot || 'C:\\Windows') + '\\System32\\taskkill.exe" /F /IM FIREFLY.exe', { stdio: 'ignore' }); } catch (e) { }
             const totalTime = Date.now() - startTime;
             console.error(`[BRIDGE] Sync complete. Total time: ${totalTime}ms`);
             connect();
