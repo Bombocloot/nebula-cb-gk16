@@ -1,5 +1,6 @@
 let HID; try { HID = require('node-hid'); } catch (e) { HID = { devices: () => [] }; }
-const { spawn, execSync } = require('child_process');
+const { spawn, execFile } = require('child_process');
+const path = require('path');
 const readline = require('readline');
 const fs = require('fs');
 
@@ -24,6 +25,7 @@ console.error('[BRIDGE] Gaming Zone disabled - using HID driver');
 const VID = 0x04D9, PID = 0xA1CD;
 const P1_BIN = 'c:\\Program Files (x86)\\Cosmic Byte\\Firefly\\modules\\setting\\p1.bin';
 const FIREFLY_EXE = 'c:\\Program Files (x86)\\Cosmic Byte\\Firefly\\FIREFLY.exe';
+const EMPTY_LINE = Array(512).fill(0).join(', ');
 
 let device = null;
 let smartEnabled = false;
@@ -339,7 +341,8 @@ while($true) {
     Start-Sleep -Milliseconds 10
 }`;
 
-    const ps = spawn('powershell.exe', ['-Command', script], { stdio: ['ignore', 'pipe', 'ignore'] });
+    const powershellPath = path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe');
+    const ps = spawn(powershellPath, ['-Command', script], { stdio: ['ignore', 'pipe', 'ignore'] });
 
     ps.stdout.on('data', data => {
         data.toString().split('\n').forEach(line => {
@@ -372,7 +375,7 @@ function onKeyStateChange(currentKeys) {
 // Per-Key Custom Mode Applier
 // Format: [Flag=16/0][R][G][B] per key, 128 keys per line, 5 lines (profiles)
 // Key order follows visual layout: ESC=0, F1=1, F2=2, ... (confirmed via testing)
-function applyCustom(args) {
+async function applyCustom(args) {
     const startTime = Date.now();
 
     try {
@@ -381,7 +384,7 @@ function applyCustom(args) {
         if (args && args.map) {
             console.error(`[BRIDGE] Map length: ${args.map.length}`);
 
-            let content = fs.readFileSync(P1_BIN, 'utf8');
+            let content = await fs.promises.readFile(P1_BIN, 'utf8');
 
             // Build 128 keys worth of [Flag][R][G][B] data
             // Each key = 4 values: Flag (16=on, 0=off), R, G, B
@@ -395,14 +398,13 @@ function applyCustom(args) {
 
             // Build the [userPicture] lines (5 lines for 5 profiles, we only set line 0)
             const line0 = keyData.join(', ');
-            const emptyLine = Array(512).fill(0).join(', ');
 
             const newUserPicture = `[userPicture]
 0=${line0}
-1=${emptyLine}
-2=${emptyLine}
-3=${emptyLine}
-4=${emptyLine}
+1=${EMPTY_LINE}
+2=${EMPTY_LINE}
+3=${EMPTY_LINE}
+4=${EMPTY_LINE}
 `;
 
             // Update [color] section to use Custom Mode (51)
@@ -416,39 +418,41 @@ function applyCustom(args) {
                 content += '\r\n' + newUserPicture;
             }
 
-            fs.writeFileSync(P1_BIN, content);
+            await fs.promises.writeFile(P1_BIN, content);
             console.error('[BRIDGE] p1.bin written');
         }
 
         // Sync via FIREFLY.exe
         // IMPORTANT: Must set CWD so it finds modules/setting/p1.bin
         const fireflyDir = 'c:\\Program Files (x86)\\Cosmic Byte\\Firefly';
-        try { execSync('taskkill /F /IM FIREFLY.exe', { stdio: 'ignore' }); } catch (e) { }
+        const taskkillPath = path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'taskkill.exe');
 
-        const writeTime = Date.now() - startTime;
-        console.error(`[BRIDGE] p1.bin write time: ${writeTime}ms`);
-        console.error('[BRIDGE] Launching Firefly to sync...');
+        execFile(taskkillPath, ['/F', '/IM', 'FIREFLY.exe'], { stdio: 'ignore' }, () => {
+            const writeTime = Date.now() - startTime;
+            console.error(`[BRIDGE] p1.bin write time: ${writeTime}ms`);
+            console.error('[BRIDGE] Launching Firefly to sync...');
 
-        const proc = spawn(FIREFLY_EXE, [], {
-            detached: true,
-            stdio: 'ignore',
-            cwd: fireflyDir,
-            windowsHide: true  // Hide FIREFLY window
+            const proc = spawn(FIREFLY_EXE, [], {
+                detached: true,
+                stdio: 'ignore',
+                cwd: fireflyDir,
+                windowsHide: true  // Hide FIREFLY window
+            });
+            proc.unref();
+
+            // Optimized sync delay (tested: 1.5s works reliably)
+            const syncDelay = args && args.fast ? 1000 : 1500;
+
+            setTimeout(() => {
+                execFile(taskkillPath, ['/F', '/IM', 'FIREFLY.exe'], { stdio: 'ignore' }, () => {
+                    const totalTime = Date.now() - startTime;
+                    console.error(`[BRIDGE] Sync complete. Total time: ${totalTime}ms`);
+                    connect();
+                    send(51, 0); // Switch to Custom Mode
+                    emit('status', { msg: `DONE (${totalTime}ms)` });
+                });
+            }, syncDelay);
         });
-        proc.unref();
-
-        // Optimized sync delay (tested: 1.5s works reliably)
-        const syncDelay = args && args.fast ? 1000 : 1500;
-
-        setTimeout(() => {
-            try { execSync('taskkill /F /IM FIREFLY.exe', { stdio: 'ignore' }); } catch (e) { }
-            const totalTime = Date.now() - startTime;
-            console.error(`[BRIDGE] Sync complete. Total time: ${totalTime}ms`);
-            connect();
-            send(51, 0); // Switch to Custom Mode
-            emit('status', { msg: `DONE (${totalTime}ms)` });
-        }, syncDelay);
-
 
     } catch (e) {
         console.error('[BRIDGE] Apply failed:', e);

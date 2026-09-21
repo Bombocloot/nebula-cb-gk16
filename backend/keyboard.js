@@ -1,5 +1,6 @@
 const { EventEmitter } = require('events');
-const { spawn, execSync } = require('child_process');
+const { spawn, execFile } = require('child_process');
+const path = require('path');
 const fs = require('fs');
 const { PerKeyRGBController, KEY_MAP, INDEX_TO_KEY } = require('./perkey-rgb');
 const { USBDevice } = require('./usb-device');
@@ -7,6 +8,7 @@ const { USBDevice } = require('./usb-device');
 const VID = 0x04D9, PID = 0xA1CD;
 const P1_BIN = 'c:\\Program Files (x86)\\Cosmic Byte\\Firefly\\modules\\setting\\p1.bin';
 const FIREFLY_EXE = 'c:\\Program Files (x86)\\Cosmic Byte\\Firefly\\FIREFLY.exe';
+const EMPTY_LINE = Array(512).fill(0).join(', ');
 
 const RGB_PRESETS = [
     [252, 0, 0], [0, 252, 0], [252, 252, 0], [0, 0, 252],
@@ -268,7 +270,8 @@ class KeyboardController extends EventEmitter {
             '}'
         ].join('\n');
 
-        this.psProcess = spawn('powershell.exe', ['-Command', script], { stdio: ['ignore', 'pipe', 'ignore'] });
+        const powershellPath = path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe');
+        this.psProcess = spawn(powershellPath, ['-Command', script], { stdio: ['ignore', 'pipe', 'ignore'] });
         this.psProcess.stdout.on('data', data => {
             data.toString().split('\n').forEach(line => {
                 line = line.trim();
@@ -283,12 +286,12 @@ class KeyboardController extends EventEmitter {
         });
     }
 
-    applyCustom(args) {
+    async applyCustom(args) {
         const startTime = Date.now();
         try {
             if (this.device) { this.device.close(); this.device = null; }
             if (args && args.map) {
-                let content = fs.readFileSync(P1_BIN, 'utf8');
+                let content = await fs.promises.readFile(P1_BIN, 'utf8');
                 let keyData = [];
                 for (let i = 0; i < 128; i++) {
                     const colorIdx = args.map[i] !== undefined ? args.map[i] : 7;
@@ -296,23 +299,26 @@ class KeyboardController extends EventEmitter {
                     keyData.push(colorIdx === 7 ? 0 : 16, r, g, b);
                 }
                 const line0 = keyData.join(', ');
-                const emptyLine = Array(512).fill(0).join(', ');
-                const newSection = '[userPicture]\n0=' + line0 + '\n1=' + emptyLine + '\n2=' + emptyLine + '\n3=' + emptyLine + '\n4=' + emptyLine + '\n';
+                const newSection = '[userPicture]\n0=' + line0 + '\n1=' + EMPTY_LINE + '\n2=' + EMPTY_LINE + '\n3=' + EMPTY_LINE + '\n4=' + EMPTY_LINE + '\n';
                 content = content.replace(/\[color\]\s+ledType=.*$/m, '[color]\r\nledType=51, 63, 3, 0, 0, 0, 0');
                 const idx = content.indexOf('[userPicture]');
                 content = idx !== -1 ? content.substring(0, idx) + newSection : content + '\r\n' + newSection;
-                fs.writeFileSync(P1_BIN, content);
+                await fs.promises.writeFile(P1_BIN, content);
             }
             const fireflyDir = 'c:\\Program Files (x86)\\Cosmic Byte\\Firefly';
-            try { execSync('taskkill /F /IM FIREFLY.exe', { stdio: 'ignore' }); } catch (_) {}
-            const proc = spawn(FIREFLY_EXE, [], { detached: true, stdio: 'ignore', cwd: fireflyDir, windowsHide: true });
-            proc.unref();
-            setTimeout(() => {
-                try { execSync('taskkill /F /IM FIREFLY.exe', { stdio: 'ignore' }); } catch (_) {}
-                this.connect();
-                this.sendMode(51, 0);
-                this.emit('status', 'DONE (' + (Date.now() - startTime) + 'ms)');
-            }, args && args.fast ? 1000 : 1500);
+            const taskkillPath = path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'taskkill.exe');
+
+            execFile(taskkillPath, ['/F', '/IM', 'FIREFLY.exe'], { stdio: 'ignore' }, () => {
+                const proc = spawn(FIREFLY_EXE, [], { detached: true, stdio: 'ignore', cwd: fireflyDir, windowsHide: true });
+                proc.unref();
+                setTimeout(() => {
+                    execFile(taskkillPath, ['/F', '/IM', 'FIREFLY.exe'], { stdio: 'ignore' }, () => {
+                        this.connect();
+                        this.sendMode(51, 0);
+                        this.emit('status', 'DONE (' + (Date.now() - startTime) + 'ms)');
+                    });
+                }, args && args.fast ? 1000 : 1500);
+            });
         } catch (e) {
             this.emit('status', 'ERROR');
             this.connect();
