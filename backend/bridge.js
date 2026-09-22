@@ -1,5 +1,7 @@
 let HID; try { HID = require('node-hid'); } catch (e) { HID = { devices: () => [] }; }
-const { spawn, execSync } = require('child_process');
+const { spawn, exec } = require('child_process');
+const util = require('util');
+const execAsync = util.promisify(exec);
 const readline = require('readline');
 const fs = require('fs');
 
@@ -339,7 +341,9 @@ while($true) {
     Start-Sleep -Milliseconds 10
 }`;
 
-    const ps = spawn('powershell.exe', ['-Command', script], { stdio: ['ignore', 'pipe', 'ignore'] });
+    const systemRoot = process.env.SystemRoot || 'C:\\Windows';
+    const powershellPath = `${systemRoot}\\System32\\WindowsPowerShell\\v1.0\\powershell.exe`;
+    const ps = spawn(powershellPath, ['-Command', script], { stdio: ['ignore', 'pipe', 'ignore'] });
 
     ps.stdout.on('data', data => {
         data.toString().split('\n').forEach(line => {
@@ -372,7 +376,7 @@ function onKeyStateChange(currentKeys) {
 // Per-Key Custom Mode Applier
 // Format: [Flag=16/0][R][G][B] per key, 128 keys per line, 5 lines (profiles)
 // Key order follows visual layout: ESC=0, F1=1, F2=2, ... (confirmed via testing)
-function applyCustom(args) {
+async function applyCustom(args) {
     const startTime = Date.now();
 
     try {
@@ -381,7 +385,7 @@ function applyCustom(args) {
         if (args && args.map) {
             console.error(`[BRIDGE] Map length: ${args.map.length}`);
 
-            let content = fs.readFileSync(P1_BIN, 'utf8');
+            let content = await fs.promises.readFile(P1_BIN, 'utf8');
 
             // Build 128 keys worth of [Flag][R][G][B] data
             // Each key = 4 values: Flag (16=on, 0=off), R, G, B
@@ -416,14 +420,16 @@ function applyCustom(args) {
                 content += '\r\n' + newUserPicture;
             }
 
-            fs.writeFileSync(P1_BIN, content);
+            await fs.promises.writeFile(P1_BIN, content);
             console.error('[BRIDGE] p1.bin written');
         }
 
         // Sync via FIREFLY.exe
         // IMPORTANT: Must set CWD so it finds modules/setting/p1.bin
         const fireflyDir = 'c:\\Program Files (x86)\\Cosmic Byte\\Firefly';
-        try { execSync('taskkill /F /IM FIREFLY.exe', { stdio: 'ignore' }); } catch (e) { }
+        const systemRoot = process.env.SystemRoot || 'C:\\Windows';
+        const taskkillPath = `${systemRoot}\\System32\\taskkill.exe`;
+        try { await execAsync(`"${taskkillPath}" /F /IM FIREFLY.exe`); } catch (e) { }
 
         const writeTime = Date.now() - startTime;
         console.error(`[BRIDGE] p1.bin write time: ${writeTime}ms`);
@@ -440,8 +446,8 @@ function applyCustom(args) {
         // Optimized sync delay (tested: 1.5s works reliably)
         const syncDelay = args && args.fast ? 1000 : 1500;
 
-        setTimeout(() => {
-            try { execSync('taskkill /F /IM FIREFLY.exe', { stdio: 'ignore' }); } catch (e) { }
+        setTimeout(async () => {
+            try { await execAsync(`"${taskkillPath}" /F /IM FIREFLY.exe`); } catch (e) { }
             const totalTime = Date.now() - startTime;
             console.error(`[BRIDGE] Sync complete. Total time: ${totalTime}ms`);
             connect();
