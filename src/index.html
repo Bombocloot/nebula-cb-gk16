@@ -803,20 +803,42 @@
 
         function buildKb(id, onClick) {
             const el = document.getElementById(id);
-            el.innerHTML = LAYOUT.map(row => `<div class="kb-row">${row.map(k => {
-                if (k.s !== undefined) return `<div style="width: ${k.s * 20}px"></div>`;
-                const w = k.w ? `key-w${String(k.w).replace('.', '')}` : '';
-                const sp = k.k === 'SPACE' ? 'key-space' : '';
-                const lbl = k.l !== undefined ? k.l : k.k;
-                return `<div class="kb-key ${w} ${sp}" data-key="${k.k}">${lbl}</div>`;
-            }).join('')}</div>`).join('');
+            el.textContent = ''; // clear
+            LAYOUT.forEach(row => {
+                const r = document.createElement('div');
+                r.className = 'kb-row';
+                row.forEach(k => {
+                    if (k.s !== undefined) {
+                        const s = document.createElement('div');
+                        s.style.width = (k.s * 20) + 'px';
+                        r.appendChild(s);
+                        return;
+                    }
+                    const d = document.createElement('div');
+                    const w = k.w ? `key-w${String(k.w).replace('.', '')}` : '';
+                    const sp = k.k === 'SPACE' ? 'key-space' : '';
+                    d.className = `kb-key ${w} ${sp}`;
+                    d.dataset.key = k.k;
+                    d.textContent = k.l !== undefined ? k.l : k.k;
+                    r.appendChild(d);
+                });
+                el.appendChild(r);
+            });
             if (onClick) el.querySelectorAll('.kb-key').forEach(k => k.onclick = () => onClick(k));
         }
 
         function colors(id, sel, cb) {
             const el = document.getElementById(id);
-            el.innerHTML = COLORS.map((c, i) => `<div class="color-swatch ${sel === i ? 'selected' : ''}" style="background:${c.h};${c.h === '#000000' ? 'border:1px dashed #444' : ''}" data-i="${i}"></div>`).join('');
-            el.querySelectorAll('.color-swatch').forEach(s => s.onclick = () => cb(+s.dataset.i));
+            el.textContent = ''; // clear
+            COLORS.forEach((c, i) => {
+                const d = document.createElement('div');
+                d.className = `color-swatch ${sel === i ? 'selected' : ''}`;
+                d.style.background = c.h;
+                if (c.h === '#000000') d.style.border = '1px dashed #444';
+                d.dataset.i = i;
+                d.onclick = () => cb(i);
+                el.appendChild(d);
+            });
         }
 
         // Navigation
@@ -861,10 +883,22 @@
 
         // Lighting
         function initLight() {
-            document.getElementById('modeGrid').innerHTML = MODES.map(m =>
-                `<div class="mode-card ${selMode === m.id ? 'selected' : ''}" data-m="${m.id}"><span class="material-symbols-outlined">${m.i}</span><span>${m.n}</span></div>`
-            ).join('');
-            document.querySelectorAll('.mode-card').forEach(c => c.onclick = () => { selMode = +c.dataset.m; initLight(); });
+            const el = document.getElementById('modeGrid');
+            el.textContent = ''; // clear
+            MODES.forEach(m => {
+                const c = document.createElement('div');
+                c.className = `mode-card ${selMode === m.id ? 'selected' : ''}`;
+                c.dataset.m = m.id;
+                const icon = document.createElement('span');
+                icon.className = 'material-symbols-outlined';
+                icon.textContent = m.i;
+                const txt = document.createElement('span');
+                txt.textContent = m.n;
+                c.appendChild(icon);
+                c.appendChild(txt);
+                c.onclick = () => { selMode = m.id; initLight(); };
+                el.appendChild(c);
+            });
             colors('colorPalette', selColor, i => { selColor = i; initLight(); });
         }
 
@@ -882,11 +916,19 @@
         // Per-Key
         function initPerkey() {
             const qc = ['#FF0000', '#00FF00', '#FFFF00', '#0000FF', '#00FFFF', '#FF00FF', '#FFFFFF', '#FF8800', '#8800FF'];
-            document.getElementById('quickColors').innerHTML = qc.map(c => `<div class="color-swatch" style="background:${c}" data-hex="${c}"></div>`).join('');
-            document.getElementById('quickColors').querySelectorAll('.color-swatch').forEach(s => s.onclick = () => {
-                paintColor = s.dataset.hex;
-                document.getElementById('paintColor').value = paintColor;
-                document.getElementById('paintHex').value = paintColor.toUpperCase();
+            const el = document.getElementById('quickColors');
+            el.textContent = ''; // clear
+            qc.forEach(c => {
+                const d = document.createElement('div');
+                d.className = 'color-swatch';
+                d.style.background = c;
+                d.dataset.hex = c;
+                d.onclick = () => {
+                    paintColor = c;
+                    document.getElementById('paintColor').value = paintColor;
+                    document.getElementById('paintHex').value = paintColor.toUpperCase();
+                };
+                el.appendChild(d);
             });
             buildKb('perkeyKb', k => {
                 perkey[k.dataset.key] = paintColor;
