@@ -1,5 +1,5 @@
 const { EventEmitter } = require('events');
-const { spawn, execSync } = require('child_process');
+const { spawn, exec } = require('child_process');
 const fs = require('fs');
 const { PerKeyRGBController, KEY_MAP, INDEX_TO_KEY } = require('./perkey-rgb');
 const { USBDevice } = require('./usb-device');
@@ -283,12 +283,13 @@ class KeyboardController extends EventEmitter {
         });
     }
 
-    applyCustom(args) {
+    async applyCustom(args) {
         const startTime = Date.now();
+        const taskkillPath = process.env.SystemRoot ? process.env.SystemRoot + '\\System32\\taskkill.exe' : 'C:\\Windows\\System32\\taskkill.exe';
         try {
             if (this.device) { this.device.close(); this.device = null; }
             if (args && args.map) {
-                let content = fs.readFileSync(P1_BIN, 'utf8');
+                let content = await fs.promises.readFile(P1_BIN, 'utf8');
                 let keyData = [];
                 for (let i = 0; i < 128; i++) {
                     const colorIdx = args.map[i] !== undefined ? args.map[i] : 7;
@@ -301,14 +302,14 @@ class KeyboardController extends EventEmitter {
                 content = content.replace(/\[color\]\s+ledType=.*$/m, '[color]\r\nledType=51, 63, 3, 0, 0, 0, 0');
                 const idx = content.indexOf('[userPicture]');
                 content = idx !== -1 ? content.substring(0, idx) + newSection : content + '\r\n' + newSection;
-                fs.writeFileSync(P1_BIN, content);
+                await fs.promises.writeFile(P1_BIN, content);
             }
             const fireflyDir = 'c:\\Program Files (x86)\\Cosmic Byte\\Firefly';
-            try { execSync('taskkill /F /IM FIREFLY.exe', { stdio: 'ignore' }); } catch (_) {}
+            try { await new Promise(r => exec(`"${taskkillPath}" /F /IM FIREFLY.exe`, r)); } catch (_) {}
             const proc = spawn(FIREFLY_EXE, [], { detached: true, stdio: 'ignore', cwd: fireflyDir, windowsHide: true });
             proc.unref();
-            setTimeout(() => {
-                try { execSync('taskkill /F /IM FIREFLY.exe', { stdio: 'ignore' }); } catch (_) {}
+            setTimeout(async () => {
+                try { await new Promise(r => exec(`"${taskkillPath}" /F /IM FIREFLY.exe`, r)); } catch (_) {}
                 this.connect();
                 this.sendMode(51, 0);
                 this.emit('status', 'DONE (' + (Date.now() - startTime) + 'ms)');

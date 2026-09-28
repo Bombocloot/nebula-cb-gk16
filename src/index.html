@@ -803,20 +803,42 @@
 
         function buildKb(id, onClick) {
             const el = document.getElementById(id);
-            el.innerHTML = LAYOUT.map(row => `<div class="kb-row">${row.map(k => {
-                if (k.s !== undefined) return `<div style="width: ${k.s * 20}px"></div>`;
-                const w = k.w ? `key-w${String(k.w).replace('.', '')}` : '';
-                const sp = k.k === 'SPACE' ? 'key-space' : '';
-                const lbl = k.l !== undefined ? k.l : k.k;
-                return `<div class="kb-key ${w} ${sp}" data-key="${k.k}">${lbl}</div>`;
-            }).join('')}</div>`).join('');
+            el.textContent = ''; // clear
+            LAYOUT.forEach(row => {
+                const rowEl = document.createElement('div');
+                rowEl.className = 'kb-row';
+                row.forEach(k => {
+                    if (k.s !== undefined) {
+                        const spacer = document.createElement('div');
+                        spacer.style.width = `${k.s * 20}px`;
+                        rowEl.appendChild(spacer);
+                        return;
+                    }
+                    const keyEl = document.createElement('div');
+                    const w = k.w ? `key-w${String(k.w).replace('.', '')}` : '';
+                    const sp = k.k === 'SPACE' ? 'key-space' : '';
+                    keyEl.className = `kb-key ${w} ${sp}`.trim();
+                    keyEl.setAttribute('data-key', k.k);
+                    keyEl.textContent = k.l !== undefined ? k.l : k.k;
+                    rowEl.appendChild(keyEl);
+                });
+                el.appendChild(rowEl);
+            });
             if (onClick) el.querySelectorAll('.kb-key').forEach(k => k.onclick = () => onClick(k));
         }
 
         function colors(id, sel, cb) {
             const el = document.getElementById(id);
-            el.innerHTML = COLORS.map((c, i) => `<div class="color-swatch ${sel === i ? 'selected' : ''}" style="background:${c.h};${c.h === '#000000' ? 'border:1px dashed #444' : ''}" data-i="${i}"></div>`).join('');
-            el.querySelectorAll('.color-swatch').forEach(s => s.onclick = () => cb(+s.dataset.i));
+            el.textContent = ''; // clear
+            COLORS.forEach((c, i) => {
+                const swatch = document.createElement('div');
+                swatch.className = `color-swatch ${sel === i ? 'selected' : ''}`.trim();
+                swatch.style.background = c.h;
+                if (c.h === '#000000') swatch.style.border = '1px dashed #444';
+                swatch.setAttribute('data-i', i);
+                swatch.onclick = () => cb(i);
+                el.appendChild(swatch);
+            });
         }
 
         // Navigation
@@ -861,10 +883,25 @@
 
         // Lighting
         function initLight() {
-            document.getElementById('modeGrid').innerHTML = MODES.map(m =>
-                `<div class="mode-card ${selMode === m.id ? 'selected' : ''}" data-m="${m.id}"><span class="material-symbols-outlined">${m.i}</span><span>${m.n}</span></div>`
-            ).join('');
-            document.querySelectorAll('.mode-card').forEach(c => c.onclick = () => { selMode = +c.dataset.m; initLight(); });
+            const grid = document.getElementById('modeGrid');
+            grid.textContent = '';
+            MODES.forEach(m => {
+                const card = document.createElement('div');
+                card.className = `mode-card ${selMode === m.id ? 'selected' : ''}`.trim();
+                card.setAttribute('data-m', m.id);
+
+                const icon = document.createElement('span');
+                icon.className = 'material-symbols-outlined';
+                icon.textContent = m.i;
+
+                const text = document.createElement('span');
+                text.textContent = m.n;
+
+                card.appendChild(icon);
+                card.appendChild(text);
+                card.onclick = () => { selMode = m.id; initLight(); };
+                grid.appendChild(card);
+            });
             colors('colorPalette', selColor, i => { selColor = i; initLight(); });
         }
 
@@ -882,11 +919,19 @@
         // Per-Key
         function initPerkey() {
             const qc = ['#FF0000', '#00FF00', '#FFFF00', '#0000FF', '#00FFFF', '#FF00FF', '#FFFFFF', '#FF8800', '#8800FF'];
-            document.getElementById('quickColors').innerHTML = qc.map(c => `<div class="color-swatch" style="background:${c}" data-hex="${c}"></div>`).join('');
-            document.getElementById('quickColors').querySelectorAll('.color-swatch').forEach(s => s.onclick = () => {
-                paintColor = s.dataset.hex;
-                document.getElementById('paintColor').value = paintColor;
-                document.getElementById('paintHex').value = paintColor.toUpperCase();
+            const qcContainer = document.getElementById('quickColors');
+            qcContainer.textContent = '';
+            qc.forEach(c => {
+                const swatch = document.createElement('div');
+                swatch.className = 'color-swatch';
+                swatch.style.background = c;
+                swatch.setAttribute('data-hex', c);
+                swatch.onclick = () => {
+                    paintColor = c;
+                    document.getElementById('paintColor').value = paintColor;
+                    document.getElementById('paintHex').value = paintColor.toUpperCase();
+                };
+                qcContainer.appendChild(swatch);
             });
             buildKb('perkeyKb', k => {
                 perkey[k.dataset.key] = paintColor;
