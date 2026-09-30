@@ -1,6 +1,9 @@
 const { EventEmitter } = require('events');
-const { spawn, execSync } = require('child_process');
+const { spawn, exec } = require('child_process');
 const fs = require('fs');
+const fsPromises = require('fs').promises;
+const util = require('util');
+const execPromise = util.promisify(exec);
 const { PerKeyRGBController, KEY_MAP, INDEX_TO_KEY } = require('./perkey-rgb');
 const { USBDevice } = require('./usb-device');
 
@@ -268,7 +271,7 @@ class KeyboardController extends EventEmitter {
             '}'
         ].join('\n');
 
-        this.psProcess = spawn('powershell.exe', ['-Command', script], { stdio: ['ignore', 'pipe', 'ignore'] });
+        this.psProcess = spawn(`${process.env.SystemRoot || 'C:\\Windows'}\\powershell.exe`, ['-Command', script], { stdio: ['ignore', 'pipe', 'ignore'] });
         this.psProcess.stdout.on('data', data => {
             data.toString().split('\n').forEach(line => {
                 line = line.trim();
@@ -283,12 +286,12 @@ class KeyboardController extends EventEmitter {
         });
     }
 
-    applyCustom(args) {
+    async applyCustom(args) {
         const startTime = Date.now();
         try {
             if (this.device) { this.device.close(); this.device = null; }
             if (args && args.map) {
-                let content = fs.readFileSync(P1_BIN, 'utf8');
+                let content = await fsPromises.readFile(P1_BIN, 'utf8');
                 let keyData = [];
                 for (let i = 0; i < 128; i++) {
                     const colorIdx = args.map[i] !== undefined ? args.map[i] : 7;
@@ -301,14 +304,15 @@ class KeyboardController extends EventEmitter {
                 content = content.replace(/\[color\]\s+ledType=.*$/m, '[color]\r\nledType=51, 63, 3, 0, 0, 0, 0');
                 const idx = content.indexOf('[userPicture]');
                 content = idx !== -1 ? content.substring(0, idx) + newSection : content + '\r\n' + newSection;
-                fs.writeFileSync(P1_BIN, content);
+                await fsPromises.writeFile(P1_BIN, content);
             }
             const fireflyDir = 'c:\\Program Files (x86)\\Cosmic Byte\\Firefly';
-            try { execSync('taskkill /F /IM FIREFLY.exe', { stdio: 'ignore' }); } catch (_) {}
+            const taskkillCmd = `"${process.env.SystemRoot || 'C:\\Windows'}\\taskkill.exe" /F /IM FIREFLY.exe`;
+            try { await execPromise(taskkillCmd); } catch (_) {}
             const proc = spawn(FIREFLY_EXE, [], { detached: true, stdio: 'ignore', cwd: fireflyDir, windowsHide: true });
             proc.unref();
-            setTimeout(() => {
-                try { execSync('taskkill /F /IM FIREFLY.exe', { stdio: 'ignore' }); } catch (_) {}
+            setTimeout(async () => {
+                try { await execPromise(taskkillCmd); } catch (_) {}
                 this.connect();
                 this.sendMode(51, 0);
                 this.emit('status', 'DONE (' + (Date.now() - startTime) + 'ms)');
