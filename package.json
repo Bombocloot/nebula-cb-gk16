@@ -1,69 +1,71 @@
 {
-    "name": "nebula-cb-gk16",
-    "version": "2.0.1",
-    "description": "Open-source RGB Controller for Cosmic Byte CB-GK-16 Firefly Keyboard",
-    "main": "main.js",
-    "author": "Bombocloot",
-    "license": "MIT",
-    "homepage": "https://github.com/Bombocloot/nebula-cb-gk16",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/Bombocloot/nebula-cb-gk16.git"
+  "name": "nebula-cb-gk16",
+  "version": "2.0.1",
+  "description": "Open-source RGB Controller for Cosmic Byte CB-GK-16 Firefly Keyboard",
+  "main": "main.js",
+  "author": "Bombocloot",
+  "license": "MIT",
+  "homepage": "https://github.com/Bombocloot/nebula-cb-gk16",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Bombocloot/nebula-cb-gk16.git"
+  },
+  "keywords": [
+    "cosmic-byte",
+    "firefly",
+    "cb-gk-16",
+    "rgb",
+    "keyboard",
+    "controller",
+    "per-key",
+    "holtek"
+  ],
+  "scripts": {
+    "start": "electron .",
+    "rebuild": "electron-rebuild",
+    "postinstall": "electron-rebuild",
+    "build": "electron-builder --win",
+    "build:dir": "electron-builder --win --dir",
+    "test": "node --require ./backend/test-setup.js --test backend/*.test.js backend/frontend-test.js"
+  },
+  "dependencies": {
+    "node-hid": "^3.1.0",
+    "usb": "^2.17.0"
+  },
+  "devDependencies": {
+    "@electron/rebuild": "^3.7.1",
+    "electron": "^34.0.0",
+    "electron-builder": "^25.1.8",
+    "jsdom": "^29.1.1"
+  },
+  "build": {
+    "appId": "com.bombocloot.nebula",
+    "asar": true,
+    "productName": "Nebula",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
     },
-    "keywords": [
-        "cosmic-byte",
-        "firefly",
-        "cb-gk-16",
-        "rgb",
-        "keyboard",
-        "controller",
-        "per-key",
-        "holtek"
+    "win": {
+      "target": [
+        "portable"
+      ],
+      "requestedExecutionLevel": "requireAdministrator"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*",
+      "backend/**/*",
+      "!backend/test-*.js",
+      "!backend/debug-*.js",
+      "!backend/*.test.js",
+      "!backend/archive/**/*",
+      "!src/stitch_extracted/**/*",
+      "!src/*.zip"
     ],
-    "scripts": {
-        "start": "electron .",
-        "rebuild": "electron-rebuild",
-        "postinstall": "electron-rebuild",
-        "build": "electron-builder --win",
-        "build:dir": "electron-builder --win --dir"
-    },
-    "dependencies": {
-        "node-hid": "^3.1.0",
-        "usb": "^2.17.0"
-    },
-    "devDependencies": {
-        "@electron/rebuild": "^3.7.1",
-        "electron": "^34.0.0",
-        "electron-builder": "^25.1.8"
-    },
-    "build": {
-        "appId": "com.bombocloot.nebula",
-        "asar": true,
-        "productName": "Nebula",
-        "directories": {
-            "output": "dist",
-            "buildResources": "build"
-        },
-        "win": {
-            "target": [
-                "portable"
-            ],
-            "requestedExecutionLevel": "requireAdministrator"
-        },
-        "files": [
-            "main.js",
-            "preload.js",
-            "src/**/*",
-            "backend/**/*",
-            "!backend/test-*.js",
-            "!backend/debug-*.js",
-            "!backend/*.test.js",
-            "!backend/archive/**/*",
-            "!src/stitch_extracted/**/*",
-            "!src/*.zip"
-        ],
-        "asarUnpack": [
-            "node_modules/node-hid/**/*"
-        ]
-    }
+    "asarUnpack": [
+      "node_modules/node-hid/**/*"
+    ]
+  }
 }
