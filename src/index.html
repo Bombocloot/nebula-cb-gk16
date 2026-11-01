@@ -642,6 +642,7 @@
                             <label class="toggle-switch"><input type="checkbox" id="dirToggle"><span
                                     class="toggle-slider"></span></label>
                         </div>
+                        <button class="btn btn-secondary" id="randomizeBtn" style="width: 100%; margin-top: 10px;">Random Color</button>
                     </div>
                 </div>
             </div>
@@ -913,6 +914,12 @@
         document.getElementById('speedSlider').oninput = e => document.getElementById('speedVal').textContent = e.target.value + '%';
         document.getElementById('brightSlider').oninput = e => document.getElementById('brightVal').textContent = e.target.value + '%';
         document.getElementById('dirToggle').onchange = e => { dir = e.target.checked ? 1 : 0; document.getElementById('dirLabel').textContent = 'Dir: ' + (dir ? 'Left' : 'Right'); };
+
+        document.getElementById('randomizeBtn').onclick = () => {
+            selColor = Math.floor(Math.random() * 7); // 0 to 6
+            initLight();
+            document.getElementById('applyBtn').click();
+        };
 
         // Smart
         function initSmart() {
