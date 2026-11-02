@@ -22,6 +22,7 @@
     ],
     "scripts": {
         "start": "electron .",
+        "test": "node --require ./backend/test-setup.js --test backend/*.test.js backend/frontend.test.js",
         "rebuild": "electron-rebuild",
         "postinstall": "electron-rebuild",
         "build": "electron-builder --win",
@@ -34,7 +35,8 @@
     "devDependencies": {
         "@electron/rebuild": "^3.7.1",
         "electron": "^34.0.0",
-        "electron-builder": "^25.1.8"
+        "electron-builder": "^25.1.8",
+        "jsdom": "^29.1.1"
     },
     "build": {
         "appId": "com.bombocloot.nebula",
